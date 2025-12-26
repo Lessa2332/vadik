@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>🎂 З Днем Народження, Вадік! 💋 Поцілунки</title>
+    <title>🎂 З Днем Народження! </title>
     <style>
         * {
             margin: 0;
@@ -18,8 +18,9 @@
             margin: 0;
             overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #000;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: white;
+            height: 100vh;
         }
         
         /* Відео фон */
@@ -30,7 +31,7 @@
             width: 100vw;
             height: 100vh;
             object-fit: cover;
-            transform: scaleX(-1); /* Дзеркальне відображення */
+            transform: scaleX(-1);
             z-index: 1;
         }
         
@@ -45,25 +46,70 @@
             pointer-events: none;
         }
         
-        /* Інтерфейс */
+        /* Головна кнопка */
         #startButton {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            padding: 20px 40px;
-            font-size: 24px;
+            padding: 25px 50px;
+            font-size: 28px;
             background: linear-gradient(135deg, #ff6b6b, #ff4757);
             border: none;
-            border-radius: 20px;
+            border-radius: 25px;
             cursor: pointer;
-            z-index: 10;
+            z-index: 100;
             transition: all 0.3s ease;
             color: white;
             font-weight: bold;
-            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.5);
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            animation: pulse 2s infinite;
+            box-shadow: 0 20px 50px rgba(255, 107, 107, 0.6),
+                        0 0 0 4px rgba(255, 107, 107, 0.3),
+                        0 0 0 8px rgba(255, 107, 107, 0.1);
+            animation: pulse-glow 2s infinite, bounce 3s infinite;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        #startButton:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 0 25px 60px rgba(255, 107, 107, 0.8),
+                        0 0 0 6px rgba(255, 107, 107, 0.4),
+                        0 0 0 12px rgba(255, 107, 107, 0.2);
+        }
+        
+        /* Кнопка звуку - ЯСКРАВА ТА ПУЛЬСУЮЧА */
+        #soundBtn {
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+            border: 3px solid white;
+            color: white;
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 15px 35px rgba(78, 205, 196, 0.7),
+                        0 0 0 3px rgba(255, 255, 255, 0.5);
+            animation: sound-pulse 1.5s infinite;
+            font-weight: bold;
+        }
+        
+        #soundBtn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 20px 45px rgba(78, 205, 196, 0.9),
+                        0 0 0 4px rgba(255, 255, 255, 0.7);
+        }
+        
+        #soundBtn.muted {
+            background: linear-gradient(135deg, #FF6B6B, #FF4757);
+            box-shadow: 0 15px 35px rgba(255, 107, 107, 0.7),
+                        0 0 0 3px rgba(255, 255, 255, 0.5);
         }
         
         #title {
@@ -72,16 +118,44 @@
             left: 50%;
             transform: translateX(-50%);
             text-align: center;
-            font-size: clamp(24px, 5vw, 36px);
+            font-size: clamp(28px, 6vw, 42px);
             font-weight: bold;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            text-shadow: 0 4px 15px rgba(0,0,0,0.9);
             z-index: 10;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 15px 30px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.9), rgba(255, 183, 77, 0.9));
+            padding: 20px 35px;
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
             white-space: nowrap;
+            animation: title-float 4s infinite ease-in-out;
+        }
+        
+        #smileIndicator {
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.9), rgba(255, 183, 77, 0.9));
+            backdrop-filter: blur(15px);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            display: none;
+            align-items: center;
+            gap: 15px;
+            z-index: 10;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            animation: slide-up 0.5s ease;
+        }
+        
+        .smile-icon {
+            font-size: 32px;
+            animation: bounce 1s infinite;
         }
         
         #loading {
@@ -96,94 +170,92 @@
             align-items: center;
             justify-content: center;
             z-index: 1000;
-            gap: 25px;
+            gap: 30px;
         }
         
         .loader {
-            width: 70px;
-            height: 70px;
-            border: 4px solid rgba(255, 107, 107, 0.3);
-            border-top: 4px solid #ff6b6b;
+            width: 80px;
+            height: 80px;
+            border: 5px solid rgba(255, 107, 107, 0.3);
+            border-top: 5px solid #ff6b6b;
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
         }
         
-        #smileIndicator {
+        /* Емоджі анімації */
+        .emoji-float {
             position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(15px);
-            color: white;
-            padding: 12px 25px;
-            border-radius: 30px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            display: none;
-            align-items: center;
-            gap: 12px;
-            z-index: 10;
-            font-size: 18px;
-            font-weight: bold;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            font-size: 70px;
+            pointer-events: none;
+            z-index: 3;
+            animation: emoji-float 2s ease-out forwards;
+            text-shadow: 0 0 30px rgba(255, 107, 107, 0.9);
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
         }
         
-        .smile-icon {
-            font-size: 24px;
-            animation: bounce 1s infinite;
-        }
-        
-        /* Кнопки управління */
-        .control-btn {
+        /* Кнопка камери */
+        #cameraBtn {
             position: fixed;
-            width: 50px;
-            height: 50px;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(15px);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.5);
             color: white;
-            font-size: 20px;
+            font-size: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             z-index: 10;
             transition: all 0.3s ease;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
         
-        .control-btn:hover { transform: scale(1.1); background: rgba(255, 255, 255, 0.25); }
-        
-        #soundBtn { top: 20px; left: 20px; }
-        #cameraBtn { bottom: 20px; left: 20px; }
-        
-        /* Конфеті */
-        .confetti {
-            position: fixed;
-            width: 15px;
-            height: 15px;
-            background: #ff6b6b;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 3;
-            animation: confetti-fall 3s linear forwards;
+        #cameraBtn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.25);
         }
         
-        /* Емоджі анімація */
-        .emoji-float {
-            position: fixed;
-            font-size: 60px;
-            pointer-events: none;
-            z-index: 3;
-            animation: emoji-float 2s ease-out forwards;
-            text-shadow: 0 0 20px rgba(255, 107, 107, 0.7);
+        /* Анімації */
+        @keyframes pulse-glow {
+            0% { 
+                box-shadow: 0 20px 50px rgba(255, 107, 107, 0.6),
+                            0 0 0 4px rgba(255, 107, 107, 0.3),
+                            0 0 0 8px rgba(255, 107, 107, 0.1);
+            }
+            50% { 
+                box-shadow: 0 25px 60px rgba(255, 107, 107, 0.8),
+                            0 0 0 6px rgba(255, 107, 107, 0.4),
+                            0 0 0 12px rgba(255, 107, 107, 0.2);
+            }
+            100% { 
+                box-shadow: 0 20px 50px rgba(255, 107, 107, 0.6),
+                            0 0 0 4px rgba(255, 107, 107, 0.3),
+                            0 0 0 8px rgba(255, 107, 107, 0.1);
+            }
         }
         
-        @keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.05); }
-            100% { transform: translate(-50%, -50%) scale(1); }
+        @keyframes sound-pulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 15px 35px rgba(78, 205, 196, 0.7),
+                            0 0 0 3px rgba(255, 255, 255, 0.5);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 20px 45px rgba(78, 205, 196, 0.9),
+                            0 0 0 4px rgba(255, 255, 255, 0.7);
+            }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            50% { transform: translate(-50%, -50%) translateY(-10px); }
         }
         
         @keyframes spin {
@@ -191,45 +263,91 @@
             100% { transform: rotate(360deg); }
         }
         
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-        
-        @keyframes confetti-fall {
-            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-        }
-        
         @keyframes emoji-float {
             0% { transform: translateY(0) scale(0.5); opacity: 0; }
-            20% { transform: translateY(-30px) scale(1.2); opacity: 1; }
-            80% { transform: translateY(-100px) scale(1); opacity: 1; }
-            100% { transform: translateY(-150px) scale(0.8); opacity: 0; }
+            20% { transform: translateY(-40px) scale(1.3); opacity: 1; }
+            80% { transform: translateY(-120px) scale(1); opacity: 1; }
+            100% { transform: translateY(-180px) scale(0.8); opacity: 0; }
         }
         
-        @keyframes emoji-pop {
-            0% { transform: scale(0); opacity: 0; }
-            70% { transform: scale(1.3); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
+        @keyframes title-float {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
         }
         
-        @keyframes heart-beat {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
+        @keyframes slide-up {
+            from { 
+                opacity: 0;
+                transform: translateX(-50%) translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
         }
         
-        @keyframes fade-in {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Інструкція */
+        #instruction {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 15px;
+            font-size: 16px;
+            max-width: 300px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: none;
+            z-index: 10;
+            line-height: 1.5;
+        }
+        
+        #instruction strong {
+            color: #4ECDC4;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 18px;
         }
         
         @media (max-width: 768px) {
-            #startButton { padding: 18px 35px; font-size: 22px; }
-            #title { top: 5%; font-size: 22px; padding: 12px 20px; }
-            #smileIndicator { bottom: 80px; font-size: 16px; padding: 10px 20px; }
-            .control-btn { width: 45px; height: 45px; font-size: 18px; }
-            .emoji-float { font-size: 50px; }
+            #startButton {
+                padding: 22px 45px;
+                font-size: 24px;
+                width: 90%;
+                text-align: center;
+            }
+            
+            #soundBtn {
+                width: 65px;
+                height: 65px;
+                font-size: 28px;
+                top: 20px;
+                left: 20px;
+            }
+            
+            #title {
+                font-size: 24px;
+                padding: 18px 25px;
+                top: 8%;
+            }
+            
+            #smileIndicator {
+                font-size: 18px;
+                padding: 12px 25px;
+                bottom: 100px;
+            }
+            
+            .emoji-float {
+                font-size: 60px;
+            }
+            
+            #instruction {
+                left: 20px;
+                right: 20px;
+                max-width: none;
+            }
         }
     </style>
 </head>
@@ -242,30 +360,49 @@
     
     <!-- Інтерфейс -->
     <div id="title">🎂 З Днем Народження, Вадік! 💋</div>
-    <button id="startButton">🎬 Почати веселощі!</button>
+    <button id="startButton">🎬 ПОЧАТИ!</button>
     <div id="smileIndicator">
         <span class="smile-icon">😊</span>
-        <span id="smileText">Посміхніться для поцілунків!</span>
+        <span id="smileText">Посміхнися!</span>
     </div>
     
-    <!-- Кнопки управління -->
-    <button id="soundBtn" class="control-btn" title="Увімкнути/вимкнути звук">🔊</button>
+    <!-- ЯСКРАВА кнопка звуку -->
+    <button id="soundBtn" class="control-btn" title="🎵 Увімкнути звук">🔊</button>
+    
+    <!-- Кнопка камери -->
     <button id="cameraBtn" class="control-btn" title="Перемкнути камеру">📷</button>
+    
+    <!-- Інструкція -->
+    <div id="instruction">
+        <strong>🎯 Як працює:</strong>
+        1. Натисни кнопку старту<br>
+        2. Дозволь доступ до камери<br>
+        3. Посміхнися! 😊 → 💋<br>
+        4. <strong style="color:#4ECDC4">УВІМКНІТЬ ЗВУК 🔊</strong> для музики
+    </div>
     
     <!-- Завантаження -->
     <div id="loading">
         <div class="loader"></div>
-        <div id="loadingText" style="font-size: 20px; text-align: center;">
+        <div id="loadingText" style="font-size: 22px; text-align: center; max-width: 300px;">
             Завантаження системи розпізнавання облич<br>
-            <span style="font-size: 16px; opacity: 0.8;">Будь ласка, дозвольте доступ до камери</span>
+            <span style="font-size: 16px; opacity: 0.8; margin-top: 10px; display: block;">
+                Будь ласка, дозвольте доступ до камери
+            </span>
         </div>
     </div>
 
-    <!-- Аудіо -->
+    <!-- АУДІО -->
     <audio id="backgroundMusic" loop>
         <source src="fon.mp3" type="audio/mpeg">
         Ваш браузер не підтримує аудіо.
     </audio>
+    
+    <!-- Резервне аудіо (якщо fon.mp3 не знайдено) -->
+    <audio id="backupMusic" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-clear-sky-479.mp3" type="audio/mpeg">
+    </audio>
+    
     <audio id="kissSound" preload="auto">
         <source src="https://assets.mixkit.co/sfx/preview/mixkit-kiss-2016.mp3" type="audio/mpeg">
     </audio>
@@ -280,12 +417,13 @@
             
             // Конфігурація
             const CONFIG = {
-                SMILE_THRESHOLD: 0.15, // Поріг посмішки
-                KISS_COOLDOWN: 800,    // Інтервал між поцілунками
-                EMOJI_SIZE: 70,        // Розмір емоджі
-                EMOJI_DURATION: 2000,  // Час життя емоджі (мс)
-                SMOOTHING_FACTOR: 0.7, // Згладжування
-                TARGET_FPS: 30
+                SMILE_THRESHOLD: 0.15,     // Поріг посмішки
+                KISS_COOLDOWN: 800,        // Інтервал між поцілунками
+                EMOJI_SIZE: 75,            // Розмір емоджі
+                EMOJI_DURATION: 2000,      // Час життя емоджі
+                SMOOTHING_FACTOR: 0.7,     // Згладжування
+                TARGET_FPS: 30,
+                ONLY_EMOJIS: ['💋', '😘']  // ТІЛЬКИ ЦІ ДВА ЕМОДЖІ
             };
             
             // Ключові точки обличчя
@@ -298,9 +436,6 @@
                 RIGHT_CHEEK: 352
             };
             
-            // Різні емоджі для поцілунків
-            const KISS_EMOJIS = ['💋', '😘', '❤️', '🥰', '😚', '🤗', '💖', '💕'];
-            
             // Елементи DOM
             const elements = {
                 video: document.getElementById('video'),
@@ -312,7 +447,9 @@
                 loadingText: document.getElementById('loadingText'),
                 soundBtn: document.getElementById('soundBtn'),
                 cameraBtn: document.getElementById('cameraBtn'),
+                instruction: document.getElementById('instruction'),
                 backgroundMusic: document.getElementById('backgroundMusic'),
+                backupMusic: document.getElementById('backupMusic'),
                 kissSound: document.getElementById('kissSound')
             };
             
@@ -323,7 +460,7 @@
             const state = {
                 isRunning: false,
                 isFrontCamera: true,
-                isSoundOn: true,
+                isSoundOn: false, // Спочатку звук вимкнено
                 faceMesh: null,
                 videoStream: null,
                 animationFrameId: null,
@@ -331,19 +468,116 @@
                 lastRenderTime: 0,
                 smileLevel: 0,
                 lastSmileLevel: 0,
-                // Активні емоджі на щоках
-                activeEmojis: [],
-                // Емоджі, що спливають
-                floatingEmojis: [],
-                // Конфеті
-                confetti: [],
-                // Статистика
-                stats: {
-                    totalKisses: 0,
-                    maxSmileLevel: 0
-                },
-                lastResults: null
+                activeEmojis: [],    // Емоджі на щоках
+                floatingEmojis: [],  // Спливаючі емоджі
+                confetti: [],        // Конфеті
+                stats: { totalKisses: 0, maxSmileLevel: 0 },
+                lastResults: null,
+                audioContext: null,  // Для розблокування аудіо
+                isAudioUnlocked: false
             };
+            
+            // ========== АУДІО СИСТЕМА ==========
+            function unlockAudio() {
+                if (state.isAudioUnlocked) return;
+                
+                // Створюємо Audio Context
+                state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Розблоковуємо аудіо
+                if (state.audioContext.state === 'suspended') {
+                    state.audioContext.resume();
+                }
+                
+                // Запускаємо музику, якщо звук увімкнено
+                if (state.isSoundOn) {
+                    playBackgroundMusic();
+                }
+                
+                state.isAudioUnlocked = true;
+                console.log('🔊 Аудіо розблоковано!');
+            }
+            
+            function playBackgroundMusic() {
+                if (!state.isSoundOn) return;
+                
+                // Спершу пробуємо локальний файл
+                elements.backgroundMusic.play().then(() => {
+                    console.log('🎵 Музика fon.mp3 грає');
+                }).catch(error => {
+                    console.log('⚠️ Не вдалося відтворити fon.mp3:', error.message);
+                    // Спробуємо резервну музику
+                    elements.backupMusic.play().then(() => {
+                        console.log('🎵 Резервна музика грає');
+                        // Змінюємо підказку на кнопці
+                        elements.soundBtn.innerHTML = '🎵';
+                    }).catch(backupError => {
+                        console.log('❌ Резервна музика теж не працює:', backupError.message);
+                        elements.soundBtn.innerHTML = '🔇';
+                        state.isSoundOn = false;
+                    });
+                });
+            }
+            
+            function toggleSound() {
+                state.isSoundOn = !state.isSoundOn;
+                
+                // Розблоковуємо аудіо при першому кліку
+                if (!state.isAudioUnlocked) {
+                    unlockAudio();
+                }
+                
+                if (state.isSoundOn) {
+                    // УВІМКНУТИ ЗВУК
+                    elements.soundBtn.innerHTML = '🔊';
+                    elements.soundBtn.classList.remove('muted');
+                    elements.soundBtn.title = '🔊 Звук увімкнено';
+                    
+                    playBackgroundMusic();
+                    
+                    // Показуємо повідомлення
+                    showMessage('🎵 Звук увімкнено! Насолоджуйтесь музикою!');
+                    
+                } else {
+                    // ВИМКНУТИ ЗВУК
+                    elements.soundBtn.innerHTML = '🔇';
+                    elements.soundBtn.classList.add('muted');
+                    elements.soundBtn.title = '🔇 Звук вимкнено';
+                    
+                    elements.backgroundMusic.pause();
+                    elements.backupMusic.pause();
+                    
+                    showMessage('🔇 Звук вимкнено');
+                }
+            }
+            
+            function showMessage(text) {
+                // Тимчасове повідомлення
+                const message = document.createElement('div');
+                message.textContent = text;
+                message.style.cssText = `
+                    position: fixed;
+                    top: 100px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(0,0,0,0.8);
+                    color: white;
+                    padding: 15px 25px;
+                    border-radius: 10px;
+                    z-index: 1000;
+                    font-weight: bold;
+                    animation: fade-in-out 3s forwards;
+                `;
+                
+                document.body.appendChild(message);
+                
+                // Видаляємо через 3 секунди
+                setTimeout(() => {
+                    if (message.parentNode) {
+                        message.parentNode.removeChild(message);
+                    }
+                }, 3000);
+            }
             
             // ========== ОСНОВНИЙ КЛАС ==========
             class KissARApp {
@@ -359,6 +593,12 @@
                         this.setupCanvas();
                         this.hideLoading();
                         this.startRenderLoop();
+                        
+                        // Автоматично показуємо інструкцію
+                        setTimeout(() => {
+                            elements.instruction.style.display = 'block';
+                        }, 2000);
+                        
                     } catch (error) {
                         this.handleError(error);
                     }
@@ -494,6 +734,7 @@
                     const smilePercent = Math.round(state.smileLevel * 100);
                     
                     if (state.smileLevel > CONFIG.SMILE_THRESHOLD) {
+                        // ПОСМІХАЄТЬСЯ - показуємо емоджі
                         this.showSmileIndicator(smilePercent);
                         
                         const now = Date.now();
@@ -502,11 +743,17 @@
                             state.lastSmileTime = now;
                         }
                     } else {
+                        // НЕ ПОСМІХАЄТЬСЯ - ховаємо емоджі
                         this.hideSmileIndicator();
+                        // Швидше зникають емоджі
+                        this.fadeEmojisQuickly();
                     }
-                    
-                    if (state.smileLevel > state.stats.maxSmileLevel) {
-                        state.stats.maxSmileLevel = state.smileLevel;
+                }
+                
+                fadeEmojisQuickly() {
+                    // Швидше зникають емоджі, коли не посміхається
+                    for (let i = state.activeEmojis.length - 1; i >= 0; i--) {
+                        state.activeEmojis[i].decay = 0.02; // Швидше зникає
                     }
                 }
                 
@@ -519,9 +766,9 @@
                     
                     if (!leftCheek || !rightCheek) return;
                     
-                    // Випадкові емоджі для кожної щоки
-                    const leftEmoji = KISS_EMOJIS[Math.floor(Math.random() * KISS_EMOJIS.length)];
-                    const rightEmoji = KISS_EMOJIS[Math.floor(Math.random() * KISS_EMOJIS.length)];
+                    // ТІЛЬКИ 💋 або 😘
+                    const leftEmoji = CONFIG.ONLY_EMOJIS[Math.floor(Math.random() * CONFIG.ONLY_EMOJIS.length)];
+                    const rightEmoji = CONFIG.ONLY_EMOJIS[Math.floor(Math.random() * CONFIG.ONLY_EMOJIS.length)];
                     
                     // Конвертація координат
                     const videoWidth = elements.video.videoWidth;
@@ -542,11 +789,11 @@
                         x: leftX * scaleX,
                         y: leftY * scaleY,
                         emoji: leftEmoji,
-                        size: CONFIG.EMOJI_SIZE * (0.8 + Math.random() * 0.4),
-                        rotation: Math.random() * 0.3 - 0.15,
+                        size: CONFIG.EMOJI_SIZE * (0.9 + Math.random() * 0.2),
+                        rotation: Math.random() * 0.2 - 0.1,
                         opacity: 1,
                         life: 1.0,
-                        decay: 0.005,
+                        decay: 0.003, // Повільне зникнення
                         createdAt: Date.now()
                     });
                     
@@ -554,15 +801,15 @@
                         x: rightX * scaleX,
                         y: rightY * scaleY,
                         emoji: rightEmoji,
-                        size: CONFIG.EMOJI_SIZE * (0.8 + Math.random() * 0.4),
-                        rotation: Math.random() * 0.3 - 0.15,
+                        size: CONFIG.EMOJI_SIZE * (0.9 + Math.random() * 0.2),
+                        rotation: Math.random() * 0.2 - 0.1,
                         opacity: 1,
                         life: 1.0,
-                        decay: 0.005,
+                        decay: 0.003,
                         createdAt: Date.now()
                     });
                     
-                    // Створюємо спливаючі емоджі
+                    // Спливаючі емоджі
                     this.createFloatingEmoji(leftX * scaleX, leftY * scaleY, leftEmoji);
                     this.createFloatingEmoji(rightX * scaleX, rightY * scaleY, rightEmoji);
                     
@@ -584,13 +831,11 @@
                     floatingEmoji.style.top = `${y}px`;
                     floatingEmoji.style.fontSize = `${CONFIG.EMOJI_SIZE}px`;
                     
-                    // Випадковий колір
-                    const colors = ['#ff6b6b', '#ff4757', '#ff8e53', '#ff6b8b'];
-                    floatingEmoji.style.color = colors[Math.floor(Math.random() * colors.length)];
+                    // Колір залежно від емоджі
+                    floatingEmoji.style.color = emoji === '💋' ? '#ff4757' : '#ff6b6b';
                     
                     document.body.appendChild(floatingEmoji);
                     
-                    // Видаляємо після анімації
                     setTimeout(() => {
                         if (floatingEmoji.parentNode) {
                             floatingEmoji.parentNode.removeChild(floatingEmoji);
@@ -599,13 +844,12 @@
                 }
                 
                 updateEmojis() {
-                    // Оновлюємо та малюємо емоджі на щоках
+                    // Оновлюємо емоджі
                     ctx.clearRect(0, 0, elements.canvas.width, elements.canvas.height);
                     
                     for (let i = state.activeEmojis.length - 1; i >= 0; i--) {
                         const emoji = state.activeEmojis[i];
                         
-                        // Оновлюємо життя
                         emoji.life -= emoji.decay;
                         emoji.opacity = emoji.life;
                         
@@ -614,7 +858,6 @@
                             continue;
                         }
                         
-                        // Малюємо емоджі
                         this.drawEmoji(emoji);
                     }
                 }
@@ -626,8 +869,8 @@
                     ctx.globalAlpha = emoji.opacity;
                     
                     // Тінь
-                    ctx.shadowColor = 'rgba(255, 107, 107, 0.8)';
-                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = emoji.emoji === '💋' ? 'rgba(255, 71, 87, 0.9)' : 'rgba(255, 107, 107, 0.9)';
+                    ctx.shadowBlur = 25;
                     ctx.shadowOffsetX = 0;
                     ctx.shadowOffsetY = 0;
                     
@@ -635,46 +878,24 @@
                     ctx.font = `bold ${emoji.size}px Arial, sans-serif`;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillStyle = this.getEmojiColor(emoji.emoji);
+                    ctx.fillStyle = emoji.emoji === '💋' ? '#ff4757' : '#ff6b6b';
                     ctx.fillText(emoji.emoji, 0, 0);
-                    
-                    // Анімація пульсації для сердечок
-                    if (emoji.emoji === '❤️' || emoji.emoji === '💖' || emoji.emoji === '💕') {
-                        const scale = 1 + 0.2 * Math.sin(Date.now() * 0.01);
-                        ctx.scale(scale, scale);
-                    }
                     
                     ctx.restore();
                 }
                 
-                getEmojiColor(emoji) {
-                    const colorMap = {
-                        '💋': '#ff4757', // Яскраво-червоний
-                        '😘': '#ff6b6b', // Червоний
-                        '❤️': '#ff3838', // Червоний
-                        '🥰': '#ff8e53', // Помаранчевий
-                        '😚': '#ff6b8b', // Рожевий
-                        '🤗': '#4ecdc4', // Бірюзовий
-                        '💖': '#ff6bc9', // Рожевий
-                        '💕': '#ff8bbd'  // Світло-рожевий
-                    };
-                    return colorMap[emoji] || '#ff6b6b';
-                }
-                
-                // ========== КОНФЕТІ ==========
+                // ========== КОНФЕТІ ТА ЗВУКИ ==========
                 createConfetti(x, y) {
-                    for (let i = 0; i < 10; i++) {
+                    for (let i = 0; i < 8; i++) {
                         state.confetti.push({
-                            x: x,
-                            y: y,
-                            vx: (Math.random() - 0.5) * 8,
-                            vy: Math.random() * -15 - 5,
-                            size: Math.random() * 6 + 3,
-                            color: `hsl(${Math.random() * 60}, 100%, 65%)`,
-                            life: 1.0,
-                            gravity: 0.3,
+                            x: x, y: y,
+                            vx: (Math.random() - 0.5) * 6,
+                            vy: Math.random() * -12 - 3,
+                            size: Math.random() * 5 + 2,
+                            color: Math.random() > 0.5 ? '#ff4757' : '#ff6b6b',
+                            life: 1.0, gravity: 0.2,
                             rotation: Math.random() * Math.PI * 2,
-                            spin: (Math.random() - 0.5) * 0.2
+                            spin: (Math.random() - 0.5) * 0.15
                         });
                     }
                 }
@@ -686,7 +907,7 @@
                         particle.vy += particle.gravity;
                         particle.x += particle.vx;
                         particle.y += particle.vy;
-                        particle.life -= 0.02;
+                        particle.life -= 0.015;
                         particle.rotation += particle.spin;
                         
                         if (particle.life <= 0) {
@@ -704,7 +925,6 @@
                     }
                 }
                 
-                // ========== АУДІО ==========
                 playKissSound() {
                     if (!state.isSoundOn) return;
                     
@@ -716,27 +936,13 @@
                     }
                 }
                 
-                toggleSound() {
-                    state.isSoundOn = !state.isSoundOn;
-                    
-                    if (state.isSoundOn) {
-                        elements.backgroundMusic.play().catch(e => {
-                            console.log('Фонова музика:', e);
-                        });
-                        elements.soundBtn.textContent = '🔊';
-                    } else {
-                        elements.backgroundMusic.pause();
-                        elements.soundBtn.textContent = '🔇';
-                    }
-                }
-                
                 // ========== ІНТЕРФЕЙС ==========
                 showSmileIndicator(percent) {
                     let smileText;
-                    if (percent > 70) smileText = 'ВАУ! Чудова посмішка! 💋💋';
-                    else if (percent > 50) smileText = 'Прекрасно! Тримайте посмішку! 😘';
-                    else if (percent > 30) smileText = 'Добре! Посміхайтеся ширше! 😊';
-                    else smileText = 'Посміхніться для поцілунків!';
+                    if (percent > 70) smileText = 'ВАУ! 💋💋';
+                    else if (percent > 50) smileText = 'Прекрасно!  😘';
+                    else if (percent > 30) smileText = 'Вітаємо.Бохонки! 😊';
+                    else smileText = 'Здійснення бажань!';
                     
                     document.getElementById('smileText').textContent = smileText;
                     elements.smileIndicator.style.display = 'flex';
@@ -752,11 +958,13 @@
                     elements.title.style.display = 'block';
                     state.isRunning = true;
                     
+                    // Показуємо інструкцію знову
+                    elements.instruction.style.display = 'block';
+                    
+                    // Нагадуємо про звук
                     setTimeout(() => {
-                        if (state.isSoundOn) {
-                            this.toggleSound();
-                        }
-                    }, 500);
+                        showMessage('🎵 Натисніть кнопку 🔊 щоб увімкнути музику!');
+                    }, 1000);
                 }
                 
                 // ========== CANVAS ==========
@@ -788,16 +996,29 @@
                 
                 // ========== ОБРОБНИКИ ПОДІЙ ==========
                 setupEventListeners() {
+                    // Головна кнопка
                     elements.startButton.addEventListener('click', () => this.hideLoading());
-                    elements.soundBtn.addEventListener('click', () => this.toggleSound());
+                    
+                    // ЯСКРАВА кнопка звуку
+                    elements.soundBtn.addEventListener('click', () => toggleSound());
+                    
+                    // Камера
                     elements.cameraBtn.addEventListener('click', () => this.switchCamera());
                     
+                    // Розблокування аудіо при кліку на сторінку
                     document.addEventListener('click', () => {
-                        if (!state.isRunning) this.hideLoading();
-                        if (state.isSoundOn && elements.backgroundMusic.paused) {
-                            elements.backgroundMusic.play().catch(() => {});
+                        if (!state.isRunning) {
+                            this.hideLoading();
+                        }
+                        // Автоматично розблоковуємо аудіо
+                        if (!state.isAudioUnlocked) {
+                            unlockAudio();
                         }
                     }, { once: true });
+                    
+                    // Автоматичний запуск аудіо при взаємодії
+                    document.addEventListener('touchstart', unlockAudio, { once: true });
+                    document.addEventListener('mousedown', unlockAudio, { once: true });
                 }
                 
                 handleError(error) {
@@ -851,6 +1072,18 @@
                 }
                 
                 new KissARApp();
+                
+                // Додаємо CSS для fade-in-out анімації
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes fade-in-out {
+                        0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+                        20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                        80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                        100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+                    }
+                `;
+                document.head.appendChild(style);
             });
             
         })();
