@@ -254,8 +254,8 @@
         }
         
         @keyframes bounce {
-            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
-            50% { transform: translate(-50%, -50%) translateY(-10px); }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
         
         @keyframes spin {
@@ -421,7 +421,8 @@
                 KISS_COOLDOWN: 800,        // Інтервал між поцілунками
                 EMOJI_SIZE: 75,            // Розмір емоджі
                 EMOJI_DURATION: 2000,      // Час життя емоджі
-                SMOOTHING_FACTOR: 0.7,     // Згладжування
+                EMOJI_LIFETIME: 2000,      // Життя емоджі на щоках (2 секунди)
+                SMOOTHING_FACTOR: 0.7,
                 TARGET_FPS: 30,
                 ONLY_EMOJIS: ['💋', '😘']  // ТІЛЬКИ ЦІ ДВА ЕМОДЖІ
             };
@@ -460,7 +461,7 @@
             const state = {
                 isRunning: false,
                 isFrontCamera: true,
-                isSoundOn: false, // Спочатку звук вимкнено
+                isSoundOn: false,
                 faceMesh: null,
                 videoStream: null,
                 animationFrameId: null,
@@ -473,23 +474,21 @@
                 confetti: [],        // Конфеті
                 stats: { totalKisses: 0, maxSmileLevel: 0 },
                 lastResults: null,
-                audioContext: null,  // Для розблокування аудіо
-                isAudioUnlocked: false
+                audioContext: null,
+                isAudioUnlocked: false,
+                lastEmojiCleanup: 0
             };
             
             // ========== АУДІО СИСТЕМА ==========
             function unlockAudio() {
                 if (state.isAudioUnlocked) return;
                 
-                // Створюємо Audio Context
                 state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 
-                // Розблоковуємо аудіо
                 if (state.audioContext.state === 'suspended') {
                     state.audioContext.resume();
                 }
                 
-                // Запускаємо музику, якщо звук увімкнено
                 if (state.isSoundOn) {
                     playBackgroundMusic();
                 }
@@ -501,15 +500,12 @@
             function playBackgroundMusic() {
                 if (!state.isSoundOn) return;
                 
-                // Спершу пробуємо локальний файл
                 elements.backgroundMusic.play().then(() => {
                     console.log('🎵 Музика fon.mp3 грає');
                 }).catch(error => {
                     console.log('⚠️ Не вдалося відтворити fon.mp3:', error.message);
-                    // Спробуємо резервну музику
                     elements.backupMusic.play().then(() => {
                         console.log('🎵 Резервна музика грає');
-                        // Змінюємо підказку на кнопці
                         elements.soundBtn.innerHTML = '🎵';
                     }).catch(backupError => {
                         console.log('❌ Резервна музика теж не працює:', backupError.message);
@@ -522,37 +518,27 @@
             function toggleSound() {
                 state.isSoundOn = !state.isSoundOn;
                 
-                // Розблоковуємо аудіо при першому кліку
                 if (!state.isAudioUnlocked) {
                     unlockAudio();
                 }
                 
                 if (state.isSoundOn) {
-                    // УВІМКНУТИ ЗВУК
                     elements.soundBtn.innerHTML = '🔊';
                     elements.soundBtn.classList.remove('muted');
                     elements.soundBtn.title = '🔊 Звук увімкнено';
-                    
                     playBackgroundMusic();
-                    
-                    // Показуємо повідомлення
                     showMessage('🎵 Звук увімкнено! Насолоджуйтесь музикою!');
-                    
                 } else {
-                    // ВИМКНУТИ ЗВУК
                     elements.soundBtn.innerHTML = '🔇';
                     elements.soundBtn.classList.add('muted');
                     elements.soundBtn.title = '🔇 Звук вимкнено';
-                    
                     elements.backgroundMusic.pause();
                     elements.backupMusic.pause();
-                    
                     showMessage('🔇 Звук вимкнено');
                 }
             }
             
             function showMessage(text) {
-                // Тимчасове повідомлення
                 const message = document.createElement('div');
                 message.textContent = text;
                 message.style.cssText = `
@@ -571,7 +557,6 @@
                 
                 document.body.appendChild(message);
                 
-                // Видаляємо через 3 секунди
                 setTimeout(() => {
                     if (message.parentNode) {
                         message.parentNode.removeChild(message);
@@ -594,7 +579,6 @@
                         this.hideLoading();
                         this.startRenderLoop();
                         
-                        // Автоматично показуємо інструкцію
                         setTimeout(() => {
                             elements.instruction.style.display = 'block';
                         }, 2000);
@@ -734,7 +718,6 @@
                     const smilePercent = Math.round(state.smileLevel * 100);
                     
                     if (state.smileLevel > CONFIG.SMILE_THRESHOLD) {
-                        // ПОСМІХАЄТЬСЯ - показуємо емоджі
                         this.showSmileIndicator(smilePercent);
                         
                         const now = Date.now();
@@ -743,17 +726,16 @@
                             state.lastSmileTime = now;
                         }
                     } else {
-                        // НЕ ПОСМІХАЄТЬСЯ - ховаємо емоджі
                         this.hideSmileIndicator();
-                        // Швидше зникають емоджі
-                        this.fadeEmojisQuickly();
+                        // При зупинці посмішки - швидше зникають емоджі
+                        this.accelerateEmojiDecay();
                     }
                 }
                 
-                fadeEmojisQuickly() {
-                    // Швидше зникають емоджі, коли не посміхається
+                accelerateEmojiDecay() {
+                    // При зупинці посмішки - емоджі зникають швидше
                     for (let i = state.activeEmojis.length - 1; i >= 0; i--) {
-                        state.activeEmojis[i].decay = 0.02; // Швидше зникає
+                        state.activeEmojis[i].decay = 0.02; // Швидше зникнення
                     }
                 }
                 
@@ -766,11 +748,9 @@
                     
                     if (!leftCheek || !rightCheek) return;
                     
-                    // ТІЛЬКИ 💋 або 😘
                     const leftEmoji = CONFIG.ONLY_EMOJIS[Math.floor(Math.random() * CONFIG.ONLY_EMOJIS.length)];
                     const rightEmoji = CONFIG.ONLY_EMOJIS[Math.floor(Math.random() * CONFIG.ONLY_EMOJIS.length)];
                     
-                    // Конвертація координат
                     const videoWidth = elements.video.videoWidth;
                     const videoHeight = elements.video.videoHeight;
                     const canvasWidth = elements.canvas.width;
@@ -784,7 +764,11 @@
                     const scaleX = canvasWidth / videoWidth;
                     const scaleY = canvasHeight / videoHeight;
                     
-                    // Додаємо емоджі на щоки
+                    // ОБМЕЖУЄМО КІЛЬКІСТЬ ЕМОДЖІ
+                    if (state.activeEmojis.length > 10) {
+                        state.activeEmojis.splice(0, 2); // Видаляємо найстаріші
+                    }
+                    
                     state.activeEmojis.push({
                         x: leftX * scaleX,
                         y: leftY * scaleY,
@@ -793,8 +777,9 @@
                         rotation: Math.random() * 0.2 - 0.1,
                         opacity: 1,
                         life: 1.0,
-                        decay: 0.003, // Повільне зникнення
-                        createdAt: Date.now()
+                        decay: 0.015, // ЗНИКНЕННЯ ЧЕРЕЗ 2-3 СЕКУНДИ
+                        createdAt: Date.now(),
+                        maxLifetime: CONFIG.EMOJI_LIFETIME
                     });
                     
                     state.activeEmojis.push({
@@ -805,20 +790,17 @@
                         rotation: Math.random() * 0.2 - 0.1,
                         opacity: 1,
                         life: 1.0,
-                        decay: 0.003,
-                        createdAt: Date.now()
+                        decay: 0.015,
+                        createdAt: Date.now(),
+                        maxLifetime: CONFIG.EMOJI_LIFETIME
                     });
                     
-                    // Спливаючі емоджі
+                    // Спливаючі емоджі (зникають автоматично)
                     this.createFloatingEmoji(leftX * scaleX, leftY * scaleY, leftEmoji);
                     this.createFloatingEmoji(rightX * scaleX, rightY * scaleY, rightEmoji);
                     
                     state.stats.totalKisses += 2;
-                    
-                    // Звук поцілунку
                     this.playKissSound();
-                    
-                    // Конфеті
                     this.createConfetti(leftX * scaleX, leftY * scaleY);
                     this.createConfetti(rightX * scaleX, rightY * scaleY);
                 }
@@ -830,8 +812,6 @@
                     floatingEmoji.style.left = `${x}px`;
                     floatingEmoji.style.top = `${y}px`;
                     floatingEmoji.style.fontSize = `${CONFIG.EMOJI_SIZE}px`;
-                    
-                    // Колір залежно від емоджі
                     floatingEmoji.style.color = emoji === '💋' ? '#ff4757' : '#ff6b6b';
                     
                     document.body.appendChild(floatingEmoji);
@@ -844,21 +824,54 @@
                 }
                 
                 updateEmojis() {
-                    // Оновлюємо емоджі
+                    // Оновлюємо емоджі та видаляємо старі
+                    const now = Date.now();
+                    
+                    // Очищаємо canvas
                     ctx.clearRect(0, 0, elements.canvas.width, elements.canvas.height);
                     
+                    // Відображаємо та оновлюємо емоджі
                     for (let i = state.activeEmojis.length - 1; i >= 0; i--) {
                         const emoji = state.activeEmojis[i];
                         
-                        emoji.life -= emoji.decay;
-                        emoji.opacity = emoji.life;
-                        
-                        if (emoji.life <= 0) {
+                        // Автоматичне зникнення після часу життя
+                        const age = now - emoji.createdAt;
+                        if (age > emoji.maxLifetime) {
                             state.activeEmojis.splice(i, 1);
                             continue;
                         }
                         
+                        // Зменшуємо прозорість
+                        emoji.life -= emoji.decay;
+                        emoji.opacity = Math.max(0, emoji.life);
+                        
+                        // Видаляємо, якщо майже невидимі
+                        if (emoji.opacity <= 0.1) {
+                            state.activeEmojis.splice(i, 1);
+                            continue;
+                        }
+                        
+                        // Малюємо емоджі
                         this.drawEmoji(emoji);
+                    }
+                    
+                    // Автоматична очистка старих емоджі кожні 5 секунд
+                    if (now - state.lastEmojiCleanup > 5000) {
+                        this.cleanupOldEmojis();
+                        state.lastEmojiCleanup = now;
+                    }
+                }
+                
+                cleanupOldEmojis() {
+                    const now = Date.now();
+                    for (let i = state.activeEmojis.length - 1; i >= 0; i--) {
+                        const emoji = state.activeEmojis[i];
+                        const age = now - emoji.createdAt;
+                        
+                        // Видаляємо емоджі старші 3 секунд
+                        if (age > 3000) {
+                            state.activeEmojis.splice(i, 1);
+                        }
                     }
                 }
                 
@@ -870,7 +883,7 @@
                     
                     // Тінь
                     ctx.shadowColor = emoji.emoji === '💋' ? 'rgba(255, 71, 87, 0.9)' : 'rgba(255, 107, 107, 0.9)';
-                    ctx.shadowBlur = 25;
+                    ctx.shadowBlur = 25 * emoji.opacity;
                     ctx.shadowOffsetX = 0;
                     ctx.shadowOffsetY = 0;
                     
@@ -958,10 +971,8 @@
                     elements.title.style.display = 'block';
                     state.isRunning = true;
                     
-                    // Показуємо інструкцію знову
                     elements.instruction.style.display = 'block';
                     
-                    // Нагадуємо про звук
                     setTimeout(() => {
                         showMessage('🎵 Натисніть кнопку 🔊 щоб увімкнути музику!');
                     }, 1000);
@@ -996,27 +1007,19 @@
                 
                 // ========== ОБРОБНИКИ ПОДІЙ ==========
                 setupEventListeners() {
-                    // Головна кнопка
                     elements.startButton.addEventListener('click', () => this.hideLoading());
-                    
-                    // ЯСКРАВА кнопка звуку
                     elements.soundBtn.addEventListener('click', () => toggleSound());
-                    
-                    // Камера
                     elements.cameraBtn.addEventListener('click', () => this.switchCamera());
                     
-                    // Розблокування аудіо при кліку на сторінку
                     document.addEventListener('click', () => {
                         if (!state.isRunning) {
                             this.hideLoading();
                         }
-                        // Автоматично розблоковуємо аудіо
                         if (!state.isAudioUnlocked) {
                             unlockAudio();
                         }
                     }, { once: true });
                     
-                    // Автоматичний запуск аудіо при взаємодії
                     document.addEventListener('touchstart', unlockAudio, { once: true });
                     document.addEventListener('mousedown', unlockAudio, { once: true });
                 }
