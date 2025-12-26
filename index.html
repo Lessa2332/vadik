@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' https: 'unsafe-inline' https://cdn.jsdelivr.net https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; media-src * blob: data:;">
     <title>🎂 З Днем Народження, Вадік! Поцілунки</title>
     <style>
         * {
@@ -14,7 +13,7 @@
             box-sizing: border-box;
             touch-action: manipulation;
         }
-       
+        
         body {
             margin: 0;
             overflow: hidden;
@@ -22,7 +21,8 @@
             background: #000;
             color: white;
         }
-       
+        
+        /* Відео фон */
         #video {
             position: fixed;
             top: 0;
@@ -30,10 +30,11 @@
             width: 100vw;
             height: 100vh;
             object-fit: cover;
-            transform: scaleX(-1);
+            transform: scaleX(-1); /* Дзеркальне відображення */
             z-index: 1;
         }
-       
+        
+        /* Canvas для малювання поцілунків */
         #canvas {
             position: fixed;
             top: 0;
@@ -43,7 +44,8 @@
             z-index: 2;
             pointer-events: none;
         }
-       
+        
+        /* Інтерфейс */
         #startButton {
             position: fixed;
             top: 50%;
@@ -63,7 +65,7 @@
             border: 3px solid rgba(255, 255, 255, 0.3);
             animation: pulse 2s infinite;
         }
-       
+        
         #title {
             position: fixed;
             top: 10%;
@@ -80,9 +82,8 @@
             backdrop-filter: blur(10px);
             border: 2px solid rgba(255, 255, 255, 0.2);
             white-space: nowrap;
-            display: none;
         }
-       
+        
         #loading {
             position: fixed;
             top: 0;
@@ -97,7 +98,7 @@
             z-index: 1000;
             gap: 25px;
         }
-       
+        
         .loader {
             width: 70px;
             height: 70px;
@@ -106,7 +107,7 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-       
+        
         #smileIndicator {
             position: fixed;
             bottom: 100px;
@@ -126,12 +127,12 @@
             font-weight: bold;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-       
+        
         .smile-icon {
             font-size: 24px;
             animation: bounce 1s infinite;
         }
-       
+        
         #debugPanel {
             position: fixed;
             top: 15px;
@@ -148,11 +149,12 @@
             backdrop-filter: blur(10px);
             line-height: 1.5;
         }
-       
+        
         .debug-value { color: #FFD700; font-weight: bold; }
         .debug-good { color: #4ECDC4; }
         .debug-bad { color: #FF6B6B; }
-       
+        
+        /* Кнопки управління */
         .control-btn {
             position: fixed;
             width: 50px;
@@ -171,12 +173,13 @@
             transition: all 0.3s ease;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
-       
+        
         .control-btn:hover { transform: scale(1.1); background: rgba(255, 255, 255, 0.25); }
-       
+        
         #soundBtn { top: 20px; left: 20px; }
         #cameraBtn { bottom: 20px; left: 20px; }
-       
+        
+        /* Конфеті */
         .confetti {
             position: fixed;
             width: 15px;
@@ -187,39 +190,39 @@
             z-index: 3;
             animation: confetti-fall 3s linear forwards;
         }
-       
+        
         @keyframes pulse {
             0% { transform: translate(-50%, -50%) scale(1); }
             50% { transform: translate(-50%, -50%) scale(1.05); }
             100% { transform: translate(-50%, -50%) scale(1); }
         }
-       
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-       
+        
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); }
         }
-       
+        
         @keyframes confetti-fall {
             0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
             100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
         }
-       
+        
         @keyframes kiss-pop {
             0% { transform: scale(0); opacity: 0; }
             50% { transform: scale(1.2); opacity: 1; }
             100% { transform: scale(1); opacity: 1; }
         }
-       
+        
         @keyframes fade-in {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-       
+        
         @media (max-width: 768px) {
             #startButton { padding: 18px 35px; font-size: 22px; }
             #title { top: 5%; font-size: 22px; padding: 12px 20px; }
@@ -230,27 +233,34 @@
     </style>
 </head>
 <body>
+    <!-- Відео поток -->
     <video id="video" playsinline muted></video>
+    
+    <!-- Canvas для поцілунків -->
     <canvas id="canvas"></canvas>
-   
+    
+    <!-- Інтерфейс -->
     <div id="title">🎂 З Днем Народження, Вадік!</div>
     <button id="startButton">🎬 Почати веселощі!</button>
     <div id="smileIndicator">
         <span class="smile-icon">😊</span>
         <span id="smileText">Посміхніться для поцілунків!</span>
     </div>
-   
+    
+    <!-- Кнопки управління -->
     <button id="soundBtn" class="control-btn" title="Увімкнути/вимкнути звук">🔊</button>
     <button id="cameraBtn" class="control-btn" title="Перемкнути камеру">📷</button>
-   
+    
+    <!-- Панель налагодження -->
     <div id="debugPanel">
         <div><strong>Face Tracking Debug</strong></div>
         <div>Статус: <span id="debugStatus" class="debug-value">Завантаження...</span></div>
-        <div>Обличь: <span id="debugFaces" class="debug-value">0</span></div>
+        <div>Облич: <span id="debugFaces" class="debug-value">0</span></div>
         <div>Посмішка: <span id="debugSmile" class="debug-value">0%</span></div>
         <div>Поцілунки: <span id="debugKisses" class="debug-value">0</span></div>
     </div>
-   
+    
+    <!-- Завантаження -->
     <div id="loading">
         <div class="loader"></div>
         <div id="loadingText" style="font-size: 20px; text-align: center;">
@@ -258,39 +268,46 @@
             <span style="font-size: 16px; opacity: 0.8;">Будь ласка, дозвольте доступ до камери</span>
         </div>
     </div>
-   
+
+    <!-- Аудіо -->
     <audio id="backgroundMusic" loop>
         <source src="fon.mp3" type="audio/mpeg">
+        Ваш браузер не підтримує аудіо.
     </audio>
     <audio id="kissSound" preload="auto">
         <source src="https://assets.mixkit.co/sfx/preview/mixkit-kiss-2016.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- Правильний бандл з офіційної документації Google -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js" crossorigin="anonymous"></script>
-
+    <!-- Бібліотеки -->
+    <!-- MediaPipe Face Mesh (старий, але стабільний API) -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js"></script>
+    
     <script>
         (function() {
             'use strict';
-           
+            
+            // Конфігурація
             const CONFIG = {
-                SMILE_THRESHOLD: 0.15,
-                KISS_COOLDOWN: 1000,
-                KISS_OPACITY: 0.7,
-                KISS_SIZE: 80,
-                SMOOTHING_FACTOR: 0.7,
-                TARGET_FPS: 30
+                SMILE_THRESHOLD: 0.15, // Поріг посмішки (0-1)
+                KISS_COOLDOWN: 1000,   // Мінімальний інтервал між поцілунками (мс)
+                KISS_OPACITY: 0.7,     // Прозорість відбитків
+                KISS_SIZE: 80,         // Розмір поцілунка (пікселі)
+                SMOOTHING_FACTOR: 0.7, // Коефіцієнт згладжування
+                TARGET_FPS: 30         // Частота кадрів
             };
-           
+            
+            // Ключові точки обличчя MediaPipe (для посмішки)
             const FACE_LANDMARKS = {
-                LEFT_MOUTH: 61,
-                RIGHT_MOUTH: 291,
-                UPPER_LIP: 13,
-                LOWER_LIP: 14,
-                LEFT_CHEEK: 123,
-                RIGHT_CHEEK: 352
+                LEFT_MOUTH: 61,   // Лівий куток рота
+                RIGHT_MOUTH: 291, // Правий куток рота
+                UPPER_LIP: 13,    // Верхня губа (центр)
+                LOWER_LIP: 14,    // Нижня губа (центр)
+                LEFT_CHEEK: 123,  // Ліва щока
+                RIGHT_CHEEK: 352  // Права щока
             };
-           
+            
+            // Елементи DOM
             const elements = {
                 video: document.getElementById('video'),
                 canvas: document.getElementById('canvas'),
@@ -298,57 +315,74 @@
                 title: document.getElementById('title'),
                 smileIndicator: document.getElementById('smileIndicator'),
                 loading: document.getElementById('loading'),
+                loadingText: document.getElementById('loadingText'),
                 soundBtn: document.getElementById('soundBtn'),
                 cameraBtn: document.getElementById('cameraBtn'),
                 backgroundMusic: document.getElementById('backgroundMusic'),
                 kissSound: document.getElementById('kissSound')
             };
-           
+            
+            // Canvas контекст
             const ctx = elements.canvas.getContext('2d');
-           
+            
+            // Елементи налагодження
             const debug = {
                 status: document.getElementById('debugStatus'),
                 faces: document.getElementById('debugFaces'),
                 smile: document.getElementById('debugSmile'),
                 kisses: document.getElementById('debugKisses')
             };
-           
+            
+            // Глобальний стан
             const state = {
                 isRunning: false,
                 isFrontCamera: true,
                 isSoundOn: true,
-                faceLandmarker: null,
+                faceMesh: null,
                 videoStream: null,
                 animationFrameId: null,
                 lastSmileTime: 0,
                 kissCount: 0,
                 lastRenderTime: 0,
+                // Для відстеження посмішки
                 smileLevel: 0,
                 lastSmileLevel: 0,
+                // Колекція активних поцілунків
                 activeKisses: [],
+                // Конфеті
                 confetti: [],
+                // Статистика
                 stats: {
-                    totalKisses: 0
-                }
+                    totalKisses: 0,
+                    maxSmileLevel: 0,
+                    smileDuration: 0
+                },
+                // Для зберігання останніх результатів
+                lastResults: null
             };
-           
+            
+            // Зображення поцілунка (створимо програмно)
             function createKissImage(size, color = '#ff6b6b') {
                 const canvas = document.createElement('canvas');
                 canvas.width = size;
                 canvas.height = size;
                 const ctx = canvas.getContext('2d');
-               
+                
+                // Малюємо стилізований відбиток губ
                 ctx.fillStyle = color;
                 ctx.globalAlpha = CONFIG.KISS_OPACITY;
-               
+                
+                // Верхня губа
                 ctx.beginPath();
                 ctx.ellipse(size/2, size/3, size/3, size/4, 0, 0, Math.PI * 2);
                 ctx.fill();
-               
+                
+                // Нижня губа
                 ctx.beginPath();
                 ctx.ellipse(size/2, size/1.8, size/2.5, size/3.5, 0, 0, Math.PI * 2);
                 ctx.fill();
-               
+                
+                // Додаємо текстуру
                 ctx.globalAlpha = 0.3;
                 ctx.fillStyle = '#ff4757';
                 for (let i = 0; i < 50; i++) {
@@ -359,32 +393,34 @@
                     ctx.arc(x, y, radius, 0, Math.PI * 2);
                     ctx.fill();
                 }
-               
+                
                 return canvas;
             }
-           
+            
+            // Попередньо створюємо зображення поцілунка
             const kissImage = createKissImage(CONFIG.KISS_SIZE, '#ff6b6b');
-           
+            
+            // ========== ОСНОВНИЙ КЛАС ==========
             class KissARApp {
                 constructor() {
                     this.init();
                 }
-               
+                
                 async init() {
                     try {
                         this.setupEventListeners();
                         await this.setupCamera();
-                        await this.initFaceTracking();
+                        await this.initFaceMesh();
                         this.setupCanvas();
                         this.hideLoading();
                         this.startRenderLoop();
-                        debug.status.textContent = '✅ Готово';
-                        debug.status.className = 'debug-value debug-good';
+                        this.updateDebug('status', 'debug-good', '✅ Готово');
                     } catch (error) {
                         this.handleError(error);
                     }
                 }
-               
+                
+                // ========== КАМЕРА ==========
                 async setupCamera() {
                     try {
                         const constraints = {
@@ -395,32 +431,34 @@
                                 frameRate: { ideal: 30 }
                             }
                         };
-                       
+                        
                         const stream = await navigator.mediaDevices.getUserMedia(constraints);
                         elements.video.srcObject = stream;
                         state.videoStream = stream;
-                       
+                        
                         await new Promise((resolve) => {
                             elements.video.onloadedmetadata = () => {
                                 elements.video.play();
                                 resolve();
                             };
                         });
-                       
+                        
                     } catch (error) {
                         console.error('Помилка камери:', error);
                         throw new Error('CAMERA_ERROR');
                     }
                 }
-               
+                
                 async switchCamera() {
                     if (!state.videoStream) return;
-                   
+                    
+                    // Зупиняємо поточний потік
                     state.videoStream.getTracks().forEach(track => track.stop());
-                   
+                    
+                    // Змінюємо камеру
                     state.isFrontCamera = !state.isFrontCamera;
                     const facingMode = state.isFrontCamera ? 'user' : 'environment';
-                   
+                    
                     try {
                         const constraints = {
                             video: {
@@ -430,111 +468,123 @@
                                 frameRate: { ideal: 30 }
                             }
                         };
-                       
+                        
                         const stream = await navigator.mediaDevices.getUserMedia(constraints);
                         elements.video.srcObject = stream;
                         state.videoStream = stream;
-                       
+                        
+                        // Дзеркальне відображення тільки для фронтальної камери
                         elements.video.style.transform = state.isFrontCamera ? 'scaleX(-1)' : 'scaleX(1)';
-                       
+                        
                     } catch (error) {
                         console.error('Помилка перемикання камери:', error);
+                        // Повертаємося до попередньої камери
                         state.isFrontCamera = !state.isFrontCamera;
                     }
                 }
-               
-                async initFaceTracking() {
+                
+                // ========== FACE MESH (старий MediaPipe API) ==========
+                async initFaceMesh() {
                     try {
-                        debug.status.textContent = 'Завантаження MediaPipe...';
-                        debug.status.className = 'debug-value';
-                       
-                        const { FilesetResolver, FaceLandmarker } = mp.tasks.vision;
-                       
-                        const vision = await FilesetResolver.forVisionTasks(
-                            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm"
-                        );
-                       
-                        state.faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
-                            baseOptions: {
-                                modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-                                delegate: "GPU"
-                            },
-                            outputFaceBlendshapes: true,
-                            runningMode: "VIDEO",
-                            numFaces: 1
+                        this.updateDebug('status', 'debug-value', 'Завантаження Face Mesh...');
+                        
+                        // Ініціалізуємо Face Mesh
+                        state.faceMesh = new FaceMesh({
+                            locateFile: (file) => {
+                                return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+                            }
                         });
-                       
-                        debug.status.textContent = '✅ Face Tracking';
-                        debug.status.className = 'debug-value debug-good';
+                        
+                        state.faceMesh.setOptions({
+                            maxNumFaces: 1,
+                            refineLandmarks: true,
+                            minDetectionConfidence: 0.5,
+                            minTrackingConfidence: 0.5
+                        });
+                        
+                        // Обробка результатів
+                        state.faceMesh.onResults((results) => {
+                            state.lastResults = results;
+                        });
+                        
+                        // Запускаємо обробку кадрів
+                        const camera = new Camera(elements.video, {
+                            onFrame: async () => {
+                                if (state.faceMesh) {
+                                    await state.faceMesh.send({image: elements.video});
+                                }
+                            },
+                            width: 1280,
+                            height: 720
+                        });
+                        
+                        await camera.start();
+                        
+                        this.updateDebug('status', 'debug-good', '✅ Face Mesh готовий');
+                        return true;
+                        
                     } catch (error) {
-                        console.error('Помилка MediaPipe:', error);
-                        debug.status.textContent = '❌ Помилка';
-                        debug.status.className = 'debug-value debug-bad';
+                        console.error('Помилка Face Mesh:', error);
+                        this.updateDebug('status', 'debug-bad', '❌ Помилка');
                         throw error;
                     }
                 }
-               
+                
                 detectFace() {
-                    if (!state.faceLandmarker || !state.isRunning) return;
-                   
-                    try {
-                        if (elements.video.readyState < 2) return;
-                       
-                        const results = state.faceLandmarker.detectForVideo(elements.video, performance.now());
-                       
-                        if (results.faceLandmarks && results.faceLandmarks.length > 0) {
-                            debug.faces.textContent = '1';
-                            debug.faces.className = 'debug-value debug-good';
-                           
-                            const landmarks = results.faceLandmarks[0];
-                            const blendshapes = results.faceBlendshapes?.[0]?.categories || [];
-                           
-                            this.analyzeSmile(landmarks, blendshapes);
-                           
-                        } else {
-                            debug.faces.textContent = '0';
-                            debug.faces.className = 'debug-value debug-bad';
-                            this.hideSmileIndicator();
-                        }
-                    } catch (error) {
-                        console.error('Помилка детекції:', error);
+                    if (!state.lastResults || !state.isRunning) return;
+                    
+                    const results = state.lastResults;
+                    
+                    if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                        debug.faces.textContent = '1';
+                        debug.faces.className = 'debug-value debug-good';
+                        
+                        const landmarks = results.multiFaceLandmarks[0];
+                        
+                        // Аналізуємо посмішку
+                        this.analyzeSmile(landmarks);
+                        
+                    } else {
+                        debug.faces.textContent = '0';
+                        debug.faces.className = 'debug-value debug-bad';
+                        this.hideSmileIndicator();
                     }
                 }
-               
-                analyzeSmile(landmarks, blendshapes) {
-                    let smileScore = 0;
-                   
-                    const mouthSmileLeft = blendshapes.find(b => b.categoryName === 'mouthSmileLeft');
-                    const mouthSmileRight = blendshapes.find(b => b.categoryName === 'mouthSmileRight');
-                       
-                    if (mouthSmileLeft && mouthSmileRight) {
-                        smileScore = (mouthSmileLeft.score + mouthSmileRight.score) / 2;
-                    }
-                   
-                    if (smileScore < 0.1 && landmarks.length > 400) {
-                        const leftMouth = landmarks[FACE_LANDMARKS.LEFT_MOUTH];
-                        const rightMouth = landmarks[FACE_LANDMARKS.RIGHT_MOUTH];
-                        const upperLip = landmarks[FACE_LANDMARKS.UPPER_LIP];
-                        const lowerLip = landmarks[FACE_LANDMARKS.LOWER_LIP];
-                       
-                        if (leftMouth && rightMouth && upperLip && lowerLip) {
-                            const mouthWidth = Math.abs(rightMouth.x - leftMouth.x);
-                            const mouthHeight = Math.abs(lowerLip.y - upperLip.y);
-                            const ratio = mouthHeight / mouthWidth;
-                            smileScore = Math.max(0, 1 - (ratio * 3));
-                        }
-                    }
-                   
-                    state.smileLevel = state.lastSmileLevel * (1 - CONFIG.SMOOTHING_FACTOR) + smileScore * CONFIG.SMOOTHING_FACTOR;
+                
+                analyzeSmile(landmarks) {
+                    if (!landmarks || landmarks.length < 400) return;
+                    
+                    // Отримуємо ключові точки
+                    const leftMouth = landmarks[FACE_LANDMARKS.LEFT_MOUTH];
+                    const rightMouth = landmarks[FACE_LANDMARKS.RIGHT_MOUTH];
+                    const upperLip = landmarks[FACE_LANDMARKS.UPPER_LIP];
+                    const lowerLip = landmarks[FACE_LANDMARKS.LOWER_LIP];
+                    
+                    if (!leftMouth || !rightMouth || !upperLip || !lowerLip) return;
+                    
+                    // Розраховуємо ширину та висоту рота
+                    const mouthWidth = Math.abs(rightMouth.x - leftMouth.x);
+                    const mouthHeight = Math.abs(lowerLip.y - upperLip.y);
+                    
+                    // Співвідношення висоти до ширини (посмішка = низьке співвідношення)
+                    const ratio = mouthHeight / mouthWidth;
+                    let smileScore = Math.max(0, 1 - (ratio * 3));
+                    
+                    // Згладжуємо значення
+                    state.smileLevel = state.lastSmileLevel * (1 - CONFIG.SMOOTHING_FACTOR) + 
+                                      smileScore * CONFIG.SMOOTHING_FACTOR;
                     state.lastSmileLevel = state.smileLevel;
-                   
+                    
+                    // Оновлюємо відображення
                     const smilePercent = Math.round(state.smileLevel * 100);
                     debug.smile.textContent = `${smilePercent}%`;
                     debug.smile.className = smilePercent > 20 ? 'debug-value debug-good' : 'debug-value';
-                   
+                    
+                    // Перевіряємо, чи посміхається людина
                     if (state.smileLevel > CONFIG.SMILE_THRESHOLD) {
                         this.showSmileIndicator(smilePercent);
-                       
+                        
+                        // Додаємо поцілунки, якщо посмішка триває
                         const now = Date.now();
                         if (now - state.lastSmileTime > CONFIG.KISS_COOLDOWN) {
                             this.addKisses(landmarks);
@@ -543,74 +593,133 @@
                     } else {
                         this.hideSmileIndicator();
                     }
+                    
+                    // Оновлюємо статистику
+                    if (state.smileLevel > state.stats.maxSmileLevel) {
+                        state.stats.maxSmileLevel = state.smileLevel;
+                    }
                 }
-               
+                
+                // ========== ПОЦІЛУНКИ ==========
                 addKisses(landmarks) {
                     if (landmarks.length < 400) return;
-                   
+                    
+                    // Координати щік
                     const leftCheek = landmarks[FACE_LANDMARKS.LEFT_CHEEK];
                     const rightCheek = landmarks[FACE_LANDMARKS.RIGHT_CHEEK];
-                   
+                    
                     if (!leftCheek || !rightCheek) return;
-                   
-                    const videoWidth = elements.video.videoWidth || elements.video.clientWidth;
-                    const videoHeight = elements.video.videoHeight || elements.video.clientHeight;
+                    
+                    // Конвертуємо нормалізовані координати в пікселі
+                    const videoWidth = elements.video.videoWidth;
+                    const videoHeight = elements.video.videoHeight;
                     const canvasWidth = elements.canvas.width;
                     const canvasHeight = elements.canvas.height;
-                   
-                    const leftX = (state.isFrontCamera ? (1 - leftCheek.x) : leftCheek.x) * videoWidth * (canvasWidth / videoWidth);
-                    const leftY = leftCheek.y * videoHeight * (canvasHeight / videoHeight);
-                   
-                    const rightX = (state.isFrontCamera ? (1 - rightCheek.x) : rightCheek.x) * videoWidth * (canvasWidth / videoWidth);
-                    const rightY = rightCheek.y * videoHeight * (canvasHeight / videoHeight);
-                   
+                    
+                    // Ліва щока
+                    const leftX = (state.isFrontCamera ? (1 - leftCheek.x) : leftCheek.x) * videoWidth;
+                    const leftY = leftCheek.y * videoHeight;
+                    
+                    // Права щока
+                    const rightX = (state.isFrontCamera ? (1 - rightCheek.x) : rightCheek.x) * videoWidth;
+                    const rightY = rightCheek.y * videoHeight;
+                    
+                    // Масштабуємо до розміру canvas
+                    const scaleX = canvasWidth / videoWidth;
+                    const scaleY = canvasHeight / videoHeight;
+                    
+                    // Додаємо поцілунки на обидві щоки
                     const kisses = [
-                        { x: leftX, y: leftY, size: CONFIG.KISS_SIZE * (0.8 + Math.random() * 0.4), rotation: Math.random() * Math.PI * 2, opacity: CONFIG.KISS_OPACITY, life: 1.0, decay: 0.01 + Math.random() * 0.02 },
-                        { x: rightX, y: rightY, size: CONFIG.KISS_SIZE * (0.8 + Math.random() * 0.4), rotation: Math.random() * Math.PI * 2, opacity: CONFIG.KISS_OPACITY, life: 1.0, decay: 0.01 + Math.random() * 0.02 }
+                        {
+                            x: leftX * scaleX,
+                            y: leftY * scaleY,
+                            size: CONFIG.KISS_SIZE * (0.8 + Math.random() * 0.4),
+                            rotation: Math.random() * Math.PI * 2,
+                            opacity: CONFIG.KISS_OPACITY,
+                            life: 1.0,
+                            decay: 0.01 + Math.random() * 0.02
+                        },
+                        {
+                            x: rightX * scaleX,
+                            y: rightY * scaleY,
+                            size: CONFIG.KISS_SIZE * (0.8 + Math.random() * 0.4),
+                            rotation: Math.random() * Math.PI * 2,
+                            opacity: CONFIG.KISS_OPACITY,
+                            life: 1.0,
+                            decay: 0.01 + Math.random() * 0.02
+                        }
                     ];
-                   
+                    
                     state.activeKisses.push(...kisses);
+                    state.kissCount += 2;
                     state.stats.totalKisses += 2;
+                    
+                    // Оновлюємо відображення
                     debug.kisses.textContent = state.stats.totalKisses;
-                   
+                    
+                    // Відтворюємо звук поцілунку
                     this.playKissSound();
-                    this.createConfetti(leftX, leftY);
-                    this.createConfetti(rightX, rightY);
+                    
+                    // Створюємо конфеті
+                    this.createConfetti(kisses[0].x, kisses[0].y);
+                    this.createConfetti(kisses[1].x, kisses[1].y);
                 }
-               
+                
                 updateKisses() {
+                    // Оновлюємо та малюємо активні поцілунки
                     for (let i = state.activeKisses.length - 1; i >= 0; i--) {
                         const kiss = state.activeKisses[i];
+                        
+                        // Зменшуємо життя
                         kiss.life -= kiss.decay;
                         kiss.opacity = CONFIG.KISS_OPACITY * kiss.life;
-                       
+                        
                         if (kiss.life <= 0) {
+                            // Видаляємо поцілунки, які зникли
                             state.activeKisses.splice(i, 1);
                             continue;
                         }
-                       
-                        ctx.save();
-                        ctx.translate(kiss.x, kiss.y);
-                        ctx.rotate(kiss.rotation);
-                        ctx.globalAlpha = kiss.opacity;
-                        ctx.drawImage(kissImage, -kiss.size / 2, -kiss.size / 2, kiss.size, kiss.size);
-                        ctx.globalAlpha = kiss.opacity * 0.3;
-                        ctx.fillStyle = '#ff6b6b';
-                        ctx.beginPath();
-                        ctx.arc(0, 0, kiss.size / 1.5, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.restore();
+                        
+                        // Малюємо поцілунок
+                        this.drawKiss(kiss);
                     }
                 }
-               
+                
+                drawKiss(kiss) {
+                    ctx.save();
+                    ctx.translate(kiss.x, kiss.y);
+                    ctx.rotate(kiss.rotation);
+                    ctx.globalAlpha = kiss.opacity;
+                    
+                    // Малюємо зображення поцілунка
+                    ctx.drawImage(
+                        kissImage,
+                        -kiss.size / 2,
+                        -kiss.size / 2,
+                        kiss.size,
+                        kiss.size
+                    );
+                    
+                    // Додаємо світіння
+                    ctx.globalAlpha = kiss.opacity * 0.3;
+                    ctx.fillStyle = '#ff6b6b';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, kiss.size / 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+                
+                // ========== КОНФЕТІ ==========
                 createConfetti(x, y) {
                     for (let i = 0; i < 15; i++) {
                         state.confetti.push({
-                            x, y,
+                            x: x,
+                            y: y,
                             vx: (Math.random() - 0.5) * 10,
                             vy: Math.random() * -15 - 5,
                             size: Math.random() * 8 + 4,
-                            color: `hsl(${Math.random() * 60 + 300}, 100%, 65%)`,
+                            color: `hsl(${Math.random() * 60 + 0}, 100%, 65%)`,
                             life: 1.0,
                             gravity: 0.4,
                             rotation: Math.random() * Math.PI * 2,
@@ -618,43 +727,51 @@
                         });
                     }
                 }
-               
+                
                 updateConfetti() {
                     for (let i = state.confetti.length - 1; i >= 0; i--) {
-                        const p = state.confetti[i];
-                        p.vy += p.gravity;
-                        p.x += p.vx;
-                        p.y += p.vy;
-                        p.life -= 0.015;
-                        p.rotation += p.spin;
-                       
-                        if (p.life <= 0) {
+                        const particle = state.confetti[i];
+                        
+                        particle.vy += particle.gravity;
+                        particle.x += particle.vx;
+                        particle.y += particle.vy;
+                        particle.life -= 0.015;
+                        particle.rotation += particle.spin;
+                        
+                        if (particle.life <= 0) {
                             state.confetti.splice(i, 1);
                             continue;
                         }
-                       
+                        
+                        // Малюємо конфеті
                         ctx.save();
-                        ctx.globalAlpha = p.life;
-                        ctx.translate(p.x, p.y);
-                        ctx.rotate(p.rotation);
-                        ctx.fillStyle = p.color;
-                        ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                        ctx.globalAlpha = particle.life;
+                        ctx.translate(particle.x, particle.y);
+                        ctx.rotate(particle.rotation);
+                        ctx.fillStyle = particle.color;
+                        ctx.fillRect(-particle.size/2, -particle.size/2, particle.size, particle.size);
                         ctx.restore();
                     }
                 }
-               
+                
+                // ========== АУДІО ==========
                 playKissSound() {
                     if (!state.isSoundOn) return;
-                    elements.kissSound.currentTime = 0;
-                    elements.kissSound.play().catch(() => {});
+                    
+                    try {
+                        elements.kissSound.currentTime = 0;
+                        elements.kissSound.play().catch(e => console.log('Звук поцілунку не відтворився:', e));
+                    } catch (error) {
+                        console.error('Помилка відтворення звуку:', error);
+                    }
                 }
-               
+                
                 toggleSound() {
                     state.isSoundOn = !state.isSoundOn;
+                    
                     if (state.isSoundOn) {
-                        elements.backgroundMusic.play().catch(() => {
-                            elements.backgroundMusic.src = 'https://assets.mixkit.co/music/preview/mixkit-clear-sky-479.mp3';
-                            elements.backgroundMusic.play().catch(() => {});
+                        elements.backgroundMusic.play().catch(e => {
+                            console.log('Не вдалося відтворити музику:', e);
                         });
                         elements.soundBtn.textContent = '🔊';
                     } else {
@@ -662,38 +779,57 @@
                         elements.soundBtn.textContent = '🔇';
                     }
                 }
-               
+                
+                // ========== ІНТЕРФЕЙС ==========
                 showSmileIndicator(percent) {
-                    const text = percent > 50 ? 'Чудова посмішка! 💋' : percent > 30 ? 'Тримайте посмішку! 😊' : 'Посміхніться сильніше!';
-                    document.getElementById('smileText').textContent = text;
+                    const smileText = percent > 50 ? 'Чудова посмішка! 💋' : 
+                                     percent > 30 ? 'Тримайте посмішку! 😊' : 
+                                     'Посміхніться для поцілунків!';
+                    
+                    document.getElementById('smileText').textContent = smileText;
                     elements.smileIndicator.style.display = 'flex';
+                    elements.smileIndicator.style.animation = 'fade-in 0.3s ease';
                 }
-               
+                
                 hideSmileIndicator() {
                     elements.smileIndicator.style.display = 'none';
                 }
-               
+                
+                showLoading(text) {
+                    elements.loadingText.textContent = text;
+                    elements.loading.style.display = 'flex';
+                }
+                
                 hideLoading() {
                     elements.loading.style.display = 'none';
                     elements.startButton.style.display = 'none';
                     elements.title.style.display = 'block';
                     state.isRunning = true;
-                    if (state.isSoundOn) this.toggleSound();
+                    
+                    // Автоматично запускаємо музику при старті
+                    setTimeout(() => {
+                        if (state.isSoundOn) {
+                            this.toggleSound();
+                        }
+                    }, 500);
                 }
-               
+                
+                // ========== CANVAS ==========
                 setupCanvas() {
                     elements.canvas.width = window.innerWidth;
                     elements.canvas.height = window.innerHeight;
+                    
                     window.addEventListener('resize', () => {
                         elements.canvas.width = window.innerWidth;
                         elements.canvas.height = window.innerHeight;
                     });
                 }
-               
+                
                 clearCanvas() {
                     ctx.clearRect(0, 0, elements.canvas.width, elements.canvas.height);
                 }
-               
+                
+                // ========== ГЛАВНИЙ ЦИКЛ ==========
                 startRenderLoop() {
                     const render = (currentTime) => {
                         if (currentTime - state.lastRenderTime >= 1000 / CONFIG.TARGET_FPS) {
@@ -709,51 +845,91 @@
                     };
                     render(performance.now());
                 }
-               
+                
+                // ========== ОБРОБНИКИ ПОДІЙ ==========
                 setupEventListeners() {
                     elements.startButton.addEventListener('click', () => this.hideLoading());
+                    
                     elements.soundBtn.addEventListener('click', () => this.toggleSound());
+                    
                     elements.cameraBtn.addEventListener('click', () => this.switchCamera());
+                    
+                    // Розблокування аудіо при кліку
                     document.addEventListener('click', () => {
+                        if (!state.isRunning) {
+                            this.hideLoading();
+                        }
                         if (state.isSoundOn && elements.backgroundMusic.paused) {
                             elements.backgroundMusic.play().catch(() => {});
                         }
                     }, { once: true });
                 }
-               
+                
+                // ========== ДОПОМІЖНІ ФУНКЦІЇ ==========
+                updateDebug(elementId, className, text) {
+                    if (debug[elementId]) {
+                        debug[elementId].textContent = text;
+                        debug[elementId].className = `debug-value ${className}`;
+                    }
+                }
+                
                 handleError(error) {
                     console.error('Помилка додатку:', error);
+                    
                     let message = 'Невідома помилка';
                     let details = '';
+                    
                     if (error.message === 'CAMERA_ERROR') {
                         message = 'Помилка доступу до камери';
-                        details = 'Дозвольте доступ до камери';
-                    } else {
-                        message = 'Помилка завантаження';
-                        details = 'Оновіть сторінку або перевірте інтернет';
+                        details = 'Дозвольте доступ до камери у налаштуваннях браузера';
+                    } else if (error.message.includes('Face Mesh')) {
+                        message = 'Помилка Face Mesh';
+                        details = 'Перевірте підключення до інтернету';
                     }
+                    
                     elements.loading.innerHTML = `
                         <div style="color: #ff4757; font-size: 24px; margin-bottom: 15px;">${message}</div>
-                        <div style="color: white; font-size: 16px; margin-bottom: 20px;">${details}</div>
-                        <button onclick="location.reload()" style="padding: 12px 24px; background: linear-gradient(135deg, #ff6b6b, #ff4757); border: none; color: white; font-size: 16px; cursor: pointer; border-radius: 25px;">Спробувати знову</button>
+                        <div style="color: white; font-size: 16px; margin-bottom: 20px; line-height: 1.4;">${details}</div>
+                        <button onclick="location.reload()" style="
+                            padding: 12px 24px;
+                            background: linear-gradient(135deg, #ff6b6b, #ff4757);
+                            border: none;
+                            color: white;
+                            font-size: 16px;
+                            font-weight: bold;
+                            cursor: pointer;
+                            border-radius: 25px;
+                            transition: all 0.3s ease;
+                        ">Спробувати знову</button>
                     `;
                 }
-               
+                
                 cleanup() {
-                    if (state.animationFrameId) cancelAnimationFrame(state.animationFrameId);
-                    if (state.videoStream) state.videoStream.getTracks().forEach(t => t.stop());
-                    if (state.faceLandmarker) state.faceLandmarker.close();
+                    if (state.animationFrameId) {
+                        cancelAnimationFrame(state.animationFrameId);
+                    }
+                    if (state.videoStream) {
+                        state.videoStream.getTracks().forEach(track => track.stop());
+                    }
                 }
             }
-           
+            
+            // Запуск додатку
             window.addEventListener('DOMContentLoaded', () => {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    elements.loading.innerHTML = `<div style="color: #ff4757;">Браузер не підтримує камеру</div><div>Спробуйте Chrome або Safari</div>`;
+                    elements.loading.innerHTML = `
+                        <div style="color: #ff4757; font-size: 24px; margin-bottom: 15px;">Браузер не підтримує</div>
+                        <div style="color: white; font-size: 16px; margin-bottom: 20px; line-height: 1.4;">
+                            Ваш браузер не підтримує доступ до камери.<br>
+                            Спробуйте Chrome, Edge або Safari.
+                        </div>
+                    `;
                     return;
                 }
-                const app = new KissARApp();
-                window.addEventListener('beforeunload', () => app.cleanup());
+                
+                new KissARApp();
             });
+            
         })();
     </script>
 </body>
