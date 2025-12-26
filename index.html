@@ -272,15 +272,18 @@
 
     <!-- Аудіо -->
     <audio id="backgroundMusic" loop>
+        <!-- ВАЖЛИВО: файл fon.mp3 має бути в тій самій папці -->
         <source src="fon.mp3" type="audio/mpeg">
         Ваш браузер не підтримує аудіо.
     </audio>
     <audio id="kissSound" preload="auto">
+        <!-- Резервний звук поцілунку з інтернету -->
         <source src="https://assets.mixkit.co/sfx/preview/mixkit-kiss-2016.mp3" type="audio/mpeg">
     </audio>
 
     <!-- Бібліотеки -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3"></script>
+    <!-- MediaPipe Tasks Vision через UMD bundle (без ES modules) -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/dist/vision_bundle.js"></script>
     
     <script>
         (function() {
@@ -400,7 +403,29 @@
             // ========== ОСНОВНИЙ КЛАС ==========
             class KissARApp {
                 constructor() {
-                    this.init();
+                    // Зачекаємо, поки завантажиться MediaPipe
+                    this.waitForMediaPipe().then(() => this.init());
+                }
+                
+                async waitForMediaPipe() {
+                    // Чекаємо, поки завантажиться MediaPipe Tasks Vision
+                    return new Promise((resolve) => {
+                        const checkInterval = setInterval(() => {
+                            if (window.FaceLandmarker && window.FilesetResolver) {
+                                clearInterval(checkInterval);
+                                resolve();
+                            }
+                        }, 100);
+                        
+                        // Таймаут через 10 секунд
+                        setTimeout(() => {
+                            clearInterval(checkInterval);
+                            if (!window.FaceLandmarker) {
+                                console.error('MediaPipe не завантажився');
+                                this.handleError(new Error('MEDIAPIPE_LOAD_ERROR'));
+                            }
+                        }, 10000);
+                    });
                 }
                 
                 async init() {
@@ -485,12 +510,16 @@
                     try {
                         this.updateDebug('status', 'debug-value', 'Завантаження MediaPipe...');
                         
-                        // Завантажуємо MediaPipe Face Landmarker
-                        const vision = await FilesetResolver.forVisionTasks(
+                        // Використовуємо глобальні об'єкти MediaPipe
+                        if (!window.FilesetResolver || !window.FaceLandmarker) {
+                            throw new Error('MediaPipe не завантажено');
+                        }
+                        
+                        const vision = await window.FilesetResolver.forVisionTasks(
                             "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
                         );
                         
-                        state.faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+                        state.faceLandmarker = await window.FaceLandmarker.createFromOptions(vision, {
                             baseOptions: {
                                 modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
                                 delegate: "GPU"
@@ -770,7 +799,14 @@
                     state.isSoundOn = !state.isSoundOn;
                     
                     if (state.isSoundOn) {
-                        elements.backgroundMusic.play().catch(e => console.log('Фонова музика:', e));
+                        // Спершу пробуємо локальний файл
+                        elements.backgroundMusic.src = 'fon.mp3';
+                        elements.backgroundMusic.play().catch(e => {
+                            console.log('Не вдалося відтворити локальну музику, використовуючи резервну версію:', e);
+                            // Резервна фонова музика з інтернету
+                            elements.backgroundMusic.src = 'https://assets.mixkit.co/music/preview/mixkit-clear-sky-479.mp3';
+                            elements.backgroundMusic.play().catch(e => console.log('Резервна музика теж не спрацювала:', e));
+                        });
                         elements.soundBtn.textContent = '🔊';
                     } else {
                         elements.backgroundMusic.pause();
@@ -804,12 +840,12 @@
                     elements.title.style.display = 'block';
                     state.isRunning = true;
                     
-                    // Автоматично запускаємо музику
+                    // Автоматично запускаємо музику при старті
                     setTimeout(() => {
                         if (state.isSoundOn) {
-                            elements.backgroundMusic.play().catch(e => console.log('Музика:', e));
+                            this.toggleSound(); // Це запустить музику
                         }
-                    }, 1000);
+                    }, 500);
                 }
                 
                 // ========== CANVAS ==========
@@ -862,7 +898,7 @@
                             this.hideLoading();
                         }
                         // Розблоковуємо аудіо контекст
-                        if (state.isSoundOn) {
+                        if (state.isSoundOn && elements.backgroundMusic.paused) {
                             elements.backgroundMusic.play().catch(() => {});
                         }
                     }, { once: true });
@@ -888,6 +924,9 @@
                     } else if (error.message.includes('MediaPipe')) {
                         message = 'Помилка MediaPipe';
                         details = 'Перевірте підключення до інтернету';
+                    } else if (error.message === 'MEDIAPIPE_LOAD_ERROR') {
+                        message = 'MediaPipe не завантажився';
+                        details = 'Оновіть сторінку або спробуйте інший браузер';
                     }
                     
                     elements.loading.innerHTML = `
@@ -920,7 +959,7 @@
                 }
             }
             
-            // Запуск додатку
+            // Запуск додатку при повному завантаженні сторінки
             window.addEventListener('DOMContentLoaded', () => {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     elements.loading.innerHTML = `
@@ -933,11 +972,19 @@
                     return;
                 }
                 
-                const app = new KissARApp();
+                // Запускаємо додаток
+                new KissARApp();
                 
                 // Очистка при закритті
-                window.addEventListener('beforeunload', () => app.cleanup());
+                window.addEventListener('beforeunload', () => {
+                    if (window.appInstance) {
+                        window.appInstance.cleanup();
+                    }
+                });
             });
+            
+            // Зберігаємо екземпляр для глобального доступу
+            window.appInstance = null;
             
         })();
     </script>
