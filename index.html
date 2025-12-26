@@ -158,6 +158,24 @@
             animation: bounce 1s infinite;
         }
         
+        /* Дебаг-панель для тестування */
+        #debugPanel {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 1000;
+            display: block;
+            max-width: 300px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
         #loading {
             position: fixed;
             top: 0;
@@ -348,6 +366,13 @@
                 right: 20px;
                 max-width: none;
             }
+            
+            #debugPanel {
+                top: 80px;
+                right: 10px;
+                font-size: 10px;
+                max-width: 150px;
+            }
         }
     </style>
 </head>
@@ -366,20 +391,19 @@
         <span id="smileText">Посміхнися!</span>
     </div>
     
+    <!-- Дебаг-панель -->
+    <div id="debugPanel" style="display: none;">
+        <div>Смайл рівень: <span id="debugSmile">0</span></div>
+        <div>Посмішка: <span id="debugIsSmiling">ні</span></div>
+        <div>Емоджі: <span id="debugEmojiCount">0</span></div>
+        <div>Відношення: <span id="debugRatio">0</span></div>
+    </div>
+    
     <!-- ЯСКРАВА кнопка звуку -->
     <button id="soundBtn" class="control-btn" title="🎵 Увімкнути звук">🔊</button>
     
     <!-- Кнопка камери -->
     <button id="cameraBtn" class="control-btn" title="Перемкнути камеру">📷</button>
-    
-    <!-- Інструкція -->
-    <div id="instruction">
-        <strong>🎯 Як працює:</strong>
-        1. Натисни кнопку старту<br>
-        2. Дозволь доступ до камери<br>
-        3. Посміхнися! 😊 → 💋<br>
-        4. <strong style="color:#4ECDC4">УВІМКНІТЬ ЗВУК 🔊</strong> для музики
-    </div>
     
     <!-- Завантаження -->
     <div id="loading">
@@ -417,14 +441,15 @@
             
             // Конфігурація
             const CONFIG = {
-                SMILE_THRESHOLD: 0.18,     // Поріг посмішки (трохи вище)
-                KISS_COOLDOWN: 300,        // Інтервал між поцілунками (коротше)
+                SMILE_THRESHOLD: 0.08,     // МЕНШИЙ поріг для посмішки (змінив з 0.18)
+                KISS_COOLDOWN: 300,
                 EMOJI_SIZE: 75,
                 EMOJI_DURATION: 2000,
-                EMOJI_LIFETIME: 1500,      // Життя емоджі на щоках (1.5 секунди)
+                EMOJI_LIFETIME: 1500,
                 SMOOTHING_FACTOR: 0.7,
                 TARGET_FPS: 30,
-                ONLY_EMOJIS: ['💋', '😘']
+                ONLY_EMOJIS: ['💋', '😘'],
+                DEBUG: true  // Додано дебаг режим
             };
             
             // Ключові точки обличчя
@@ -451,7 +476,12 @@
                 instruction: document.getElementById('instruction'),
                 backgroundMusic: document.getElementById('backgroundMusic'),
                 backupMusic: document.getElementById('backupMusic'),
-                kissSound: document.getElementById('kissSound')
+                kissSound: document.getElementById('kissSound'),
+                debugPanel: document.getElementById('debugPanel'),
+                debugSmile: document.getElementById('debugSmile'),
+                debugIsSmiling: document.getElementById('debugIsSmiling'),
+                debugEmojiCount: document.getElementById('debugEmojiCount'),
+                debugRatio: document.getElementById('debugRatio')
             };
             
             // Canvas контекст
@@ -469,15 +499,16 @@
                 lastRenderTime: 0,
                 smileLevel: 0,
                 lastSmileLevel: 0,
-                activeEmojis: [],    // Емоджі на щоках
-                floatingEmojis: [],  // Спливаючі емоджі
-                confetti: [],        // Конфеті
+                activeEmojis: [],
+                floatingEmojis: [],
+                confetti: [],
                 stats: { totalKisses: 0, maxSmileLevel: 0 },
                 lastResults: null,
                 audioContext: null,
                 isAudioUnlocked: false,
-                isSmiling: false,    // НОВИЙ: флаг посмішки
-                smileStartTime: 0    // НОВИЙ: час початку посмішки
+                isSmiling: false,
+                smileStartTime: 0,
+                showDebug: CONFIG.DEBUG
             };
             
             // ========== АУДІО СИСТЕМА ==========
@@ -563,6 +594,15 @@
                         message.parentNode.removeChild(message);
                     }
                 }, 3000);
+            }
+            
+            function updateDebugInfo() {
+                if (!state.showDebug) return;
+                
+                elements.debugSmile.textContent = state.smileLevel.toFixed(3);
+                elements.debugIsSmiling.textContent = state.isSmiling ? 'ТАК' : 'ні';
+                elements.debugEmojiCount.textContent = state.activeEmojis.length;
+                elements.debugPanel.style.display = 'block';
             }
             
             // ========== ОСНОВНИЙ КЛАС ==========
@@ -694,8 +734,10 @@
                         this.analyzeSmile(landmarks);
                     } else {
                         this.hideSmileIndicator();
-                        state.isSmiling = false; // Не видно обличчя - не посміхається
+                        state.isSmiling = false;
                     }
+                    
+                    updateDebugInfo();
                 }
                 
                 analyzeSmile(landmarks) {
@@ -710,8 +752,21 @@
                     
                     const mouthWidth = Math.abs(rightMouth.x - leftMouth.x);
                     const mouthHeight = Math.abs(lowerLip.y - upperLip.y);
+                    
+                    // КОРЕКТНИЙ РОЗРАХУНОК ПОСМІШКИ:
+                    // Коли посміхаємося - рот стає ШИРШИМ і МЕНШ ВИСОКИМ
+                    // Тому ratio = висота / ширина
                     const ratio = mouthHeight / mouthWidth;
-                    let smileScore = Math.max(0, 1 - (ratio * 3));
+                    
+                    // Дебаг інформація
+                    if (state.showDebug) {
+                        elements.debugRatio.textContent = ratio.toFixed(3);
+                    }
+                    
+                    // Корекція формули: менший ratio = більша посмішка
+                    // Нейтральний рот має ratio ~0.3-0.4
+                    // Посмішка має ratio < 0.2
+                    let smileScore = Math.max(0, (0.4 - ratio) * 5); // Інвертуємо логіку
                     
                     state.smileLevel = state.lastSmileLevel * (1 - CONFIG.SMOOTHING_FACTOR) + 
                                       smileScore * CONFIG.SMOOTHING_FACTOR;
@@ -720,14 +775,19 @@
                     const smilePercent = Math.round(state.smileLevel * 100);
                     const now = Date.now();
                     
-                    // ВИЗНАЧЕННЯ, ЧИ ПОСМІХАЄТЬСЯ
+                    // НОВА ЛОГІКА: використовуємо ratio напряму
                     const wasSmiling = state.isSmiling;
-                    state.isSmiling = state.smileLevel > CONFIG.SMILE_THRESHOLD;
+                    
+                    // Ratio менше = посмішка (рот ширший, менш високий)
+                    // При ratio < 0.25 - посмішка
+                    // При ratio < 0.15 - широка посмішка
+                    const ratioThreshold = 0.25;
+                    state.isSmiling = ratio < ratioThreshold;
                     
                     if (state.isSmiling) {
                         // ЛЮДИНА ПОСМІХАЄТЬСЯ
                         if (!wasSmiling) {
-                            state.smileStartTime = now; // Запам'ятовуємо час початку посмішки
+                            state.smileStartTime = now;
                         }
                         
                         this.showSmileIndicator(smilePercent);
@@ -739,19 +799,15 @@
                     } else {
                         // ЛЮДИНА НЕ ПОСМІХАЄТЬСЯ
                         this.hideSmileIndicator();
-                        
-                        // ШВИДКО ЗНИКАЮТЬ ВСІ ЕМОДЖІ, коли перестаєш посміхатися
                         this.removeAllEmojisQuickly();
                     }
                 }
                 
-                // ШВИДКЕ ВИДАЛЕННЯ ВСІХ ЕМОДЖІ, коли не посміхається
                 removeAllEmojisQuickly() {
                     const now = Date.now();
                     for (let i = state.activeEmojis.length - 1; i >= 0; i--) {
                         const emoji = state.activeEmojis[i];
-                        // Швидке зникнення
-                        emoji.life -= 0.08; // Дуже швидко зникає
+                        emoji.life -= 0.15; // Дуже швидко зникає
                         emoji.opacity = Math.max(0, emoji.life);
                         
                         if (emoji.opacity <= 0.1) {
@@ -785,8 +841,8 @@
                     const scaleX = canvasWidth / videoWidth;
                     const scaleY = canvasHeight / videoHeight;
                     
-                    // ОБМЕЖУЄМО КІЛЬКІСТЬ ЕМОДЖІ
-                    if (state.activeEmojis.length > 8) {
+                    // Обмежуємо кількість емоджі
+                    if (state.activeEmojis.length > 6) {
                         state.activeEmojis.splice(0, 2);
                     }
                     
@@ -798,7 +854,7 @@
                         rotation: Math.random() * 0.2 - 0.1,
                         opacity: 1,
                         life: 1.0,
-                        decay: 0.02, // ЗНИКНЕННЯ ЧЕРЕЗ 1.5 СЕКУНДИ
+                        decay: 0.03,
                         createdAt: Date.now(),
                         maxLifetime: CONFIG.EMOJI_LIFETIME
                     });
@@ -811,12 +867,12 @@
                         rotation: Math.random() * 0.2 - 0.1,
                         opacity: 1,
                         life: 1.0,
-                        decay: 0.02,
+                        decay: 0.03,
                         createdAt: Date.now(),
                         maxLifetime: CONFIG.EMOJI_LIFETIME
                     });
                     
-                    // Спливаючі емоджі (зникають автоматично)
+                    // Спливаючі емоджі
                     this.createFloatingEmoji(leftX * scaleX, leftY * scaleY, leftEmoji);
                     this.createFloatingEmoji(rightX * scaleX, rightY * scaleY, rightEmoji);
                     
@@ -845,7 +901,6 @@
                 }
                 
                 updateEmojis() {
-                    // Оновлюємо емоджі
                     const now = Date.now();
                     
                     // Очищаємо canvas
@@ -855,7 +910,6 @@
                     for (let i = state.activeEmojis.length - 1; i >= 0; i--) {
                         const emoji = state.activeEmojis[i];
                         
-                        // Автоматичне зникнення після часу життя
                         const age = now - emoji.createdAt;
                         if (age > emoji.maxLifetime) {
                             state.activeEmojis.splice(i, 1);
@@ -864,20 +918,17 @@
                         
                         // Якщо людина не посміхається - емоджі зникають швидше
                         if (!state.isSmiling) {
-                            emoji.decay = 0.08; // Дуже швидке зникнення
+                            emoji.decay = 0.15;
                         }
                         
-                        // Зменшуємо прозорість
                         emoji.life -= emoji.decay;
                         emoji.opacity = Math.max(0, emoji.life);
                         
-                        // Видаляємо, якщо майже невидимі
                         if (emoji.opacity <= 0.1) {
                             state.activeEmojis.splice(i, 1);
                             continue;
                         }
                         
-                        // Малюємо емоджі
                         this.drawEmoji(emoji);
                     }
                 }
@@ -888,13 +939,11 @@
                     ctx.rotate(emoji.rotation);
                     ctx.globalAlpha = emoji.opacity;
                     
-                    // Тінь
                     ctx.shadowColor = emoji.emoji === '💋' ? 'rgba(255, 71, 87, 0.9)' : 'rgba(255, 107, 107, 0.9)';
                     ctx.shadowBlur = 25 * emoji.opacity;
                     ctx.shadowOffsetX = 0;
                     ctx.shadowOffsetY = 0;
                     
-                    // Емоджі
                     ctx.font = `bold ${emoji.size}px Arial, sans-serif`;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
@@ -1018,6 +1067,14 @@
                     elements.soundBtn.addEventListener('click', () => toggleSound());
                     elements.cameraBtn.addEventListener('click', () => this.switchCamera());
                     
+                    // Додаємо тогл для дебаг панелі
+                    document.addEventListener('keypress', (e) => {
+                        if (e.key === 'd' || e.key === 'D') {
+                            state.showDebug = !state.showDebug;
+                            elements.debugPanel.style.display = state.showDebug ? 'block' : 'none';
+                        }
+                    });
+                    
                     document.addEventListener('click', () => {
                         if (!state.isRunning) {
                             this.hideLoading();
@@ -1039,7 +1096,7 @@
                     
                     if (error.message === 'CAMERA_ERROR') {
                         message = 'Помилка доступу до камери';
-                        details = 'Дозвольте доступ до камери у налаштуваннях браузера';
+                        details = 'Дозвольте доступ до камери у налашруваннях браузера';
                     } else if (error.message.includes('Face Mesh')) {
                         message = 'Помилка розпізнавання облич';
                         details = 'Перевірте підключення до інтернету';
