@@ -304,31 +304,6 @@
             }
         }
         
-        /* Інструкція */
-        #instruction {
-            position: fixed;
-            bottom: 30px;
-            left: 30px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 15px;
-            font-size: 16px;
-            max-width: 300px;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            display: none;
-            z-index: 10;
-            line-height: 1.5;
-        }
-        
-        #instruction strong {
-            color: #4ECDC4;
-            display: block;
-            margin-bottom: 8px;
-            font-size: 18px;
-        }
-        
         @media (max-width: 768px) {
             #startButton {
                 padding: 22px 45px;
@@ -359,12 +334,6 @@
             
             .emoji-float {
                 font-size: 60px;
-            }
-            
-            #instruction {
-                left: 20px;
-                right: 20px;
-                max-width: none;
             }
             
             #debugPanel {
@@ -441,7 +410,7 @@
             
             // Конфігурація
             const CONFIG = {
-                SMILE_THRESHOLD: 0.08,     // МЕНШИЙ поріг для посмішки (змінив з 0.18)
+                SMILE_THRESHOLD: 0.08,
                 KISS_COOLDOWN: 300,
                 EMOJI_SIZE: 75,
                 EMOJI_DURATION: 2000,
@@ -449,7 +418,7 @@
                 SMOOTHING_FACTOR: 0.7,
                 TARGET_FPS: 30,
                 ONLY_EMOJIS: ['💋', '😘'],
-                DEBUG: true  // Додано дебаг режим
+                DEBUG: true
             };
             
             // Ключові точки обличчя
@@ -473,7 +442,6 @@
                 loadingText: document.getElementById('loadingText'),
                 soundBtn: document.getElementById('soundBtn'),
                 cameraBtn: document.getElementById('cameraBtn'),
-                instruction: document.getElementById('instruction'),
                 backgroundMusic: document.getElementById('backgroundMusic'),
                 backupMusic: document.getElementById('backupMusic'),
                 kissSound: document.getElementById('kissSound'),
@@ -620,10 +588,6 @@
                         this.hideLoading();
                         this.startRenderLoop();
                         
-                        setTimeout(() => {
-                            elements.instruction.style.display = 'block';
-                        }, 2000);
-                        
                     } catch (error) {
                         this.handleError(error);
                     }
@@ -753,20 +717,13 @@
                     const mouthWidth = Math.abs(rightMouth.x - leftMouth.x);
                     const mouthHeight = Math.abs(lowerLip.y - upperLip.y);
                     
-                    // КОРЕКТНИЙ РОЗРАХУНОК ПОСМІШКИ:
-                    // Коли посміхаємося - рот стає ШИРШИМ і МЕНШ ВИСОКИМ
-                    // Тому ratio = висота / ширина
                     const ratio = mouthHeight / mouthWidth;
                     
-                    // Дебаг інформація
                     if (state.showDebug) {
                         elements.debugRatio.textContent = ratio.toFixed(3);
                     }
                     
-                    // Корекція формули: менший ratio = більша посмішка
-                    // Нейтральний рот має ratio ~0.3-0.4
-                    // Посмішка має ratio < 0.2
-                    let smileScore = Math.max(0, (0.4 - ratio) * 5); // Інвертуємо логіку
+                    let smileScore = Math.max(0, (0.4 - ratio) * 5);
                     
                     state.smileLevel = state.lastSmileLevel * (1 - CONFIG.SMOOTHING_FACTOR) + 
                                       smileScore * CONFIG.SMOOTHING_FACTOR;
@@ -775,17 +732,12 @@
                     const smilePercent = Math.round(state.smileLevel * 100);
                     const now = Date.now();
                     
-                    // НОВА ЛОГІКА: використовуємо ratio напряму
                     const wasSmiling = state.isSmiling;
                     
-                    // Ratio менше = посмішка (рот ширший, менш високий)
-                    // При ratio < 0.25 - посмішка
-                    // При ratio < 0.15 - широка посмішка
                     const ratioThreshold = 0.25;
                     state.isSmiling = ratio < ratioThreshold;
                     
                     if (state.isSmiling) {
-                        // ЛЮДИНА ПОСМІХАЄТЬСЯ
                         if (!wasSmiling) {
                             state.smileStartTime = now;
                         }
@@ -797,7 +749,6 @@
                             state.lastSmileTime = now;
                         }
                     } else {
-                        // ЛЮДИНА НЕ ПОСМІХАЄТЬСЯ
                         this.hideSmileIndicator();
                         this.removeAllEmojisQuickly();
                     }
@@ -807,7 +758,7 @@
                     const now = Date.now();
                     for (let i = state.activeEmojis.length - 1; i >= 0; i--) {
                         const emoji = state.activeEmojis[i];
-                        emoji.life -= 0.15; // Дуже швидко зникає
+                        emoji.life -= 0.15;
                         emoji.opacity = Math.max(0, emoji.life);
                         
                         if (emoji.opacity <= 0.1) {
@@ -841,7 +792,6 @@
                     const scaleX = canvasWidth / videoWidth;
                     const scaleY = canvasHeight / videoHeight;
                     
-                    // Обмежуємо кількість емоджі
                     if (state.activeEmojis.length > 6) {
                         state.activeEmojis.splice(0, 2);
                     }
@@ -872,7 +822,6 @@
                         maxLifetime: CONFIG.EMOJI_LIFETIME
                     });
                     
-                    // Спливаючі емоджі
                     this.createFloatingEmoji(leftX * scaleX, leftY * scaleY, leftEmoji);
                     this.createFloatingEmoji(rightX * scaleX, rightY * scaleY, rightEmoji);
                     
@@ -903,10 +852,8 @@
                 updateEmojis() {
                     const now = Date.now();
                     
-                    // Очищаємо canvas
                     ctx.clearRect(0, 0, elements.canvas.width, elements.canvas.height);
                     
-                    // Відображаємо та оновлюємо емоджі
                     for (let i = state.activeEmojis.length - 1; i >= 0; i--) {
                         const emoji = state.activeEmojis[i];
                         
@@ -916,7 +863,6 @@
                             continue;
                         }
                         
-                        // Якщо людина не посміхається - емоджі зникають швидше
                         if (!state.isSmiling) {
                             emoji.decay = 0.15;
                         }
@@ -1027,8 +973,6 @@
                     elements.title.style.display = 'block';
                     state.isRunning = true;
                     
-                    elements.instruction.style.display = 'block';
-                    
                     setTimeout(() => {
                         showMessage('🎵 Натисніть кнопку 🔊 щоб увімкнути музику!');
                     }, 1000);
@@ -1067,7 +1011,6 @@
                     elements.soundBtn.addEventListener('click', () => toggleSound());
                     elements.cameraBtn.addEventListener('click', () => this.switchCamera());
                     
-                    // Додаємо тогл для дебаг панелі
                     document.addEventListener('keypress', (e) => {
                         if (e.key === 'd' || e.key === 'D') {
                             state.showDebug = !state.showDebug;
@@ -1140,7 +1083,6 @@
                 
                 new KissARApp();
                 
-                // Додаємо CSS для fade-in-out анімації
                 const style = document.createElement('style');
                 style.textContent = `
                     @keyframes fade-in-out {
