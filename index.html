@@ -2,362 +2,991 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>З Днем Народження, Вадік!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' https: 'unsafe-inline' https://cdn.jsdelivr.net https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; media-src * blob: data:;">
+    <title>🎂 З Днем Народження, Вадік! Поцілунки</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            touch-action: manipulation;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .birthday-card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            max-width: 700px;
-            width: 100%;
-            text-align: center;
-            position: relative;
+            margin: 0;
             overflow: hidden;
-            border: 8px solid #ff6b8b;
-        }
-        
-        .birthday-card::before {
-            content: "";
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,107,139,0.1) 0%, rgba(255,107,139,0) 70%);
-            z-index: 0;
-        }
-        
-        h1 {
-            color: #ff6b8b;
-            font-size: 2.8rem;
-            margin-bottom: 10px;
-            position: relative;
-            z-index: 1;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .emoji {
-            font-size: 2.5rem;
-            margin: 0 10px;
-        }
-        
-        .spell {
-            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #000;
             color: white;
-            padding: 20px 30px;
-            border-radius: 15px;
-            margin: 30px 0;
-            font-size: 1.8rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(68, 160, 141, 0.3);
-            position: relative;
+        }
+        
+        /* Відео фон */
+        #video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            transform: scaleX(-1); /* Дзеркальне відображення */
             z-index: 1;
+        }
+        
+        /* Canvas для малювання поцілунків */
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+        
+        /* Інтерфейс */
+        #startButton {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            font-size: 24px;
+            background: linear-gradient(135deg, #ff6b6b, #ff4757);
             border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.5);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            animation: pulse 2s infinite;
         }
         
-        .spell:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(68, 160, 141, 0.4);
-            background: linear-gradient(45deg, #44a08d, #4ecdc4);
+        #title {
+            position: fixed;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: clamp(24px, 5vw, 36px);
+            font-weight: bold;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            white-space: nowrap;
         }
         
-        .spell:active {
-            transform: translateY(0);
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            gap: 25px;
         }
         
-        .spell .kiss-emoji {
-            font-size: 2rem;
-            display: inline-block;
-            transition: transform 0.5s ease;
-        }
-        
-        .spell:hover .kiss-emoji {
-            transform: scale(1.2) rotate(10deg);
-        }
-        
-        .hidden-content {
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-            transition: all 1s ease;
-            text-align: left;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .hidden-content.show {
-            max-height: 1000px;
-            opacity: 1;
-            margin-top: 30px;
-            padding-top: 30px;
-            border-top: 2px dashed #ff6b8b;
-        }
-        
-        .wish-list {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 25px;
-            margin-top: 20px;
-        }
-        
-        .wish-list h3 {
-            color: #ff6b8b;
-            margin-bottom: 15px;
-            font-size: 1.4rem;
-        }
-        
-        .wish-list ul {
-            list-style: none;
-            padding-left: 20px;
-        }
-        
-        .wish-list li {
-            padding: 8px 0;
-            border-bottom: 1px dotted #ddd;
-            color: #555;
-        }
-        
-        .wish-list li:last-child {
-            border-bottom: none;
-        }
-        
-        .signature {
-            font-style: italic;
-            color: #666;
-            margin-top: 20px;
-            text-align: right;
-            padding-right: 20px;
-        }
-        
-        .sparkle {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: radial-gradient(circle, #ffd166 0%, transparent 70%);
+        .loader {
+            width: 70px;
+            height: 70px;
+            border: 4px solid rgba(255, 107, 107, 0.3);
+            border-top: 4px solid #ff6b6b;
             border-radius: 50%;
-            opacity: 0;
-            z-index: 0;
+            animation: spin 1s linear infinite;
         }
         
-        @keyframes sparkleAnimation {
+        #smileIndicator {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(15px);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 10;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .smile-icon {
+            font-size: 24px;
+            animation: bounce 1s infinite;
+        }
+        
+        #debugPanel {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #4ECDC4;
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            z-index: 50;
+            border: 1px solid #4ECDC4;
+            max-width: 280px;
+            backdrop-filter: blur(10px);
+            line-height: 1.5;
+        }
+        
+        .debug-value { color: #FFD700; font-weight: bold; }
+        .debug-good { color: #4ECDC4; }
+        .debug-bad { color: #FF6B6B; }
+        
+        /* Кнопки управління */
+        .control-btn {
+            position: fixed;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .control-btn:hover { transform: scale(1.1); background: rgba(255, 255, 255, 0.25); }
+        
+        #soundBtn { top: 20px; left: 20px; }
+        #cameraBtn { bottom: 20px; left: 20px; }
+        
+        /* Конфеті */
+        .confetti {
+            position: fixed;
+            width: 15px;
+            height: 15px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 3;
+            animation: confetti-fall 3s linear forwards;
+        }
+        
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        
+        @keyframes kiss-pop {
             0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
         }
         
-        .instruction {
-            color: #666;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            font-style: italic;
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-        @media (max-width: 600px) {
-            .birthday-card {
-                padding: 25px;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .spell {
-                font-size: 1.4rem;
-                padding: 15px 20px;
-            }
+        @media (max-width: 768px) {
+            #startButton { padding: 18px 35px; font-size: 22px; }
+            #title { top: 5%; font-size: 22px; padding: 12px 20px; }
+            #smileIndicator { bottom: 80px; font-size: 16px; padding: 10px 20px; }
+            .control-btn { width: 45px; height: 45px; font-size: 18px; }
+            #debugPanel { top: 10px; right: 10px; font-size: 11px; }
         }
     </style>
 </head>
 <body>
-    <div class="birthday-card" id="birthdayCard">
-        <h1>З Днем Народження, Вадік! <span class="emoji">🎂</span><span class="emoji">🎁</span></h1>
-        
-        <button class="spell" id="magicSpell">
-            Чарівне заклинання: "Посміхнись, Вадік!" 
-            <span class="kiss-emoji">😉</span>
-        </button>
-        
-        <p class="instruction">(Натисни на заклинання або просто посміхнись!)</p>
-        
-        <div class="hidden-content" id="hiddenContent">
-            <div class="wish-list">
-                <h3>🎉 Углова посвідка! 🍹</h3>
-                
-                <h4>Список здатків у договорі:</h4>
-                <ul>
-                    <li><strong>Співпрацю № 1</strong></li>
-                    <li><strong>Співпрацю № 2</strong></li>
-                    <li><strong>Співпрацю № 3</strong></li>
-                </ul>
-                
-                <h4>К. О. Бєлєнник:</h4>
-                <ul>
-                    <li><strong>Антона, Джерела</strong></li>
-                    <li><strong>Морозка</strong></li>
-                </ul>
-                
-                <h4>Типової програми:</h4>
-                <ul>
-                    <li><strong>Геройський В. П.</strong></li>
-                    <li><strong>В. Гуляй</strong></li>
-                </ul>
-                
-                <h4>А. ТЕБЕ ЗДІЛЬНЯ ФОНОВА:</h4>
-                <ul>
-                    <li>Дом віта, Шкілівка для магазину для відсотки зарядів (СТЗ)</li>
-                    <li>Костейчук, ступеня в мені, систем та їх часу</li>
-                    <li>Підтримка для інших робіт</li>
-                </ul>
-                
-                <h4>Р. М. Шаблер:</h4>
-                <ul>
-                    <li>Дом віта, Шкілівка для магазину для відсотки (СТЗ)</li>
-                    <li>Костейчук, ступеня в мені, систем та їх часу</li>
-                    <li>Підтримка для інших робіт</li>
-                </ul>
-                
-                <div class="signature">
-                    З найкращими побажаннями! 💖
-                </div>
-            </div>
+    <!-- Відео поток -->
+    <video id="video" playsinline muted></video>
+    
+    <!-- Canvas для поцілунків -->
+    <canvas id="canvas"></canvas>
+    
+    <!-- Інтерфейс -->
+    <div id="title">🎂 З Днем Народження, Вадік!</div>
+    <button id="startButton">🎬 Почати веселощі!</button>
+    <div id="smileIndicator">
+        <span class="smile-icon">😊</span>
+        <span id="smileText">Посміхніться для поцілунків!</span>
+    </div>
+    
+    <!-- Кнопки управління -->
+    <button id="soundBtn" class="control-btn" title="Увімкнути/вимкнути звук">🔊</button>
+    <button id="cameraBtn" class="control-btn" title="Перемкнути камеру">📷</button>
+    
+    <!-- Панель налагодження -->
+    <div id="debugPanel">
+        <div><strong>Face Tracking Debug</strong></div>
+        <div>Статус: <span id="debugStatus" class="debug-value">Завантаження...</span></div>
+        <div>Обличь: <span id="debugFaces" class="debug-value">0</span></div>
+        <div>Посмішка: <span id="debugSmile" class="debug-value">0%</span></div>
+        <div>Поцілунки: <span id="debugKisses" class="debug-value">0</span></div>
+    </div>
+    
+    <!-- Завантаження -->
+    <div id="loading">
+        <div class="loader"></div>
+        <div id="loadingText" style="font-size: 20px; text-align: center;">
+            Завантаження системи розпізнавання облич<br>
+            <span style="font-size: 16px; opacity: 0.8;">Будь ласка, дозвольте доступ до камери</span>
         </div>
     </div>
 
+    <!-- Аудіо -->
+    <audio id="backgroundMusic" loop>
+        <!-- ВАЖЛИВО: файл fon.mp3 має бути в тій самій папці -->
+        <source src="fon.mp3" type="audio/mpeg">
+        Ваш браузер не підтримує аудіо.
+    </audio>
+    <audio id="kissSound" preload="auto">
+        <!-- Резервний звук поцілунку з інтернету -->
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-kiss-2016.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Бібліотеки -->
+    <!-- MediaPipe Tasks Vision через UMD bundle (без ES modules) -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/dist/vision_bundle.js"></script>
+    
     <script>
-        const magicSpell = document.getElementById('magicSpell');
-        const hiddenContent = document.getElementById('hiddenContent');
-        const birthdayCard = document.getElementById('birthdayCard');
-        let isContentVisible = false;
-        
-        // Функція для створення ефекту вибуху зірочок
-        function createSparkles(count) {
-            for (let i = 0; i < count; i++) {
-                const sparkle = document.createElement('div');
-                sparkle.classList.add('sparkle');
+        (function() {
+            'use strict';
+            
+            // Конфігурація
+            const CONFIG = {
+                SMILE_THRESHOLD: 0.15, // Поріг посмішки (0-1)
+                KISS_COOLDOWN: 1000,   // Мінімальний інтервал між поцілунками (мс)
+                KISS_OPACITY: 0.7,     // Прозорість відбитків
+                KISS_SIZE: 80,         // Розмір поцілунка (пікселі)
+                SMOOTHING_FACTOR: 0.7, // Коефіцієнт згладжування
+                TARGET_FPS: 30         // Частота кадрів
+            };
+            
+            // Ключові точки обличчя MediaPipe (для посмішки)
+            const FACE_LANDMARKS = {
+                LEFT_MOUTH: 61,   // Лівий куток рота
+                RIGHT_MOUTH: 291, // Правий куток рота
+                UPPER_LIP: 13,    // Верхня губа (центр)
+                LOWER_LIP: 14,    // Нижня губа (центр)
+                LEFT_CHEEK: 123,  // Ліва щока
+                RIGHT_CHEEK: 352  // Права щока
+            };
+            
+            // Елементи DOM
+            const elements = {
+                video: document.getElementById('video'),
+                canvas: document.getElementById('canvas'),
+                startButton: document.getElementById('startButton'),
+                title: document.getElementById('title'),
+                smileIndicator: document.getElementById('smileIndicator'),
+                loading: document.getElementById('loading'),
+                loadingText: document.getElementById('loadingText'),
+                soundBtn: document.getElementById('soundBtn'),
+                cameraBtn: document.getElementById('cameraBtn'),
+                backgroundMusic: document.getElementById('backgroundMusic'),
+                kissSound: document.getElementById('kissSound')
+            };
+            
+            // Canvas контекст
+            const ctx = elements.canvas.getContext('2d');
+            
+            // Елементи налагодження
+            const debug = {
+                status: document.getElementById('debugStatus'),
+                faces: document.getElementById('debugFaces'),
+                smile: document.getElementById('debugSmile'),
+                kisses: document.getElementById('debugKisses')
+            };
+            
+            // Глобальний стан
+            const state = {
+                isRunning: false,
+                isFrontCamera: true,
+                isSoundOn: true,
+                faceLandmarker: null,
+                videoStream: null,
+                animationFrameId: null,
+                lastSmileTime: 0,
+                kissCount: 0,
+                lastRenderTime: 0,
+                // Для відстеження посмішки
+                smileLevel: 0,
+                lastSmileLevel: 0,
+                // Колекція активних поцілунків
+                activeKisses: [],
+                // Конфеті
+                confetti: [],
+                // Статистика
+                stats: {
+                    totalKisses: 0,
+                    maxSmileLevel: 0,
+                    smileDuration: 0
+                }
+            };
+            
+            // Зображення поцілунка (створимо програмно)
+            function createKissImage(size, color = '#ff6b6b') {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
                 
-                // Випадкова позиція навколо кнопки
-                const angle = Math.random() * Math.PI * 2;
-                const distance = 100 + Math.random() * 150;
-                const x = Math.cos(angle) * distance;
-                const y = Math.sin(angle) * distance;
+                // Малюємо стилізований відбиток губ
+                ctx.fillStyle = color;
+                ctx.globalAlpha = CONFIG.KISS_OPACITY;
                 
-                sparkle.style.left = `calc(50% + ${x}px)`;
-                sparkle.style.top = `calc(50% + ${y}px)`;
+                // Верхня губа
+                ctx.beginPath();
+                ctx.ellipse(size/2, size/3, size/3, size/4, 0, 0, Math.PI * 2);
+                ctx.fill();
                 
-                // Випадковий розмір
-                const size = 5 + Math.random() * 15;
-                sparkle.style.width = `${size}px`;
-                sparkle.style.height = `${size}px`;
+                // Нижня губа
+                ctx.beginPath();
+                ctx.ellipse(size/2, size/1.8, size/2.5, size/3.5, 0, 0, Math.PI * 2);
+                ctx.fill();
                 
-                // Випадкова затримка анімації
-                const delay = Math.random() * 0.5;
-                sparkle.style.animationDelay = `${delay}s`;
-                
-                // Випадковий колір
-                const colors = ['#ff6b8b', '#4ecdc4', '#ffd166', '#a663cc'];
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                sparkle.style.background = `radial-gradient(circle, ${color} 0%, transparent 70%)`;
-                
-                birthdayCard.appendChild(sparkle);
-                
-                // Запуск анімації
-                setTimeout(() => {
-                    sparkle.style.animation = 'sparkleAnimation 1s ease forwards';
-                }, 10);
-                
-                // Видалення елемента після анімації
-                setTimeout(() => {
-                    sparkle.remove();
-                }, 1100);
-            }
-        }
-        
-        // Функція для активації магії
-        function activateMagic() {
-            if (!isContentVisible) {
-                // Показуємо прихований контент
-                hiddenContent.classList.add('show');
-                isContentVisible = true;
-                
-                // Створюємо ефект вибуху зірочок
-                createSparkles(30);
-                
-                // Змінюємо текст кнопки
-                magicSpell.innerHTML = 'Магія працює! Дивись нижче! ✨';
-                
-                // Додаємо вібрацію (якщо підтримується)
-                if (navigator.vibrate) {
-                    navigator.vibrate([100, 50, 100]);
+                // Додаємо текстуру
+                ctx.globalAlpha = 0.3;
+                ctx.fillStyle = '#ff4757';
+                for (let i = 0; i < 50; i++) {
+                    const x = Math.random() * size;
+                    const y = Math.random() * size;
+                    const radius = Math.random() * 3;
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, 0, Math.PI * 2);
+                    ctx.fill();
                 }
                 
-                // Додаємо анімацію до емодзі
-                const kissEmoji = document.querySelector('.kiss-emoji');
-                kissEmoji.style.transform = 'scale(1.5) rotate(20deg)';
-                setTimeout(() => {
-                    kissEmoji.style.transform = 'scale(1) rotate(0deg)';
-                }, 300);
+                return canvas;
             }
-        }
-        
-        // Обробник кліку на заклинання
-        magicSpell.addEventListener('click', activateMagic);
-        
-        // Також активуємо магію при наведенні (як варіант "посмішки")
-        magicSpell.addEventListener('mouseenter', () => {
-            if (!isContentVisible) {
-                // Трохи збільшуємо емодзі при наведенні
-                const kissEmoji = document.querySelector('.kiss-emoji');
-                kissEmoji.style.transform = 'scale(1.3) rotate(10deg)';
-            }
-        });
-        
-        magicSpell.addEventListener('mouseleave', () => {
-            if (!isContentVisible) {
-                const kissEmoji = document.querySelector('.kiss-emoji');
-                kissEmoji.style.transform = 'scale(1) rotate(0deg)';
-            }
-        });
-        
-        // Бонус: активація при натисканні клавіші пробіл або Enter
-        document.addEventListener('keydown', (event) => {
-            if ((event.code === 'Space' || event.code === 'Enter') && !isContentVisible) {
-                activateMagic();
-            }
-        });
-        
-        // Автоматична активація через 5 секунд, якщо користувач не активував
-        setTimeout(() => {
-            if (!isContentVisible) {
-                // Трохи підсвічуємо кнопку, щоб привернути увагу
-                magicSpell.style.boxShadow = '0 5px 20px rgba(255, 107, 139, 0.6)';
-                magicSpell.style.background = 'linear-gradient(45deg, #ff6b8b, #ff8e9e)';
+            
+            // Попередньо створюємо зображення поцілунка
+            const kissImage = createKissImage(CONFIG.KISS_SIZE, '#ff6b6b');
+            
+            // ========== ОСНОВНИЙ КЛАС ==========
+            class KissARApp {
+                constructor() {
+                    // Зачекаємо, поки завантажиться MediaPipe
+                    this.waitForMediaPipe().then(() => this.init());
+                }
                 
-                setTimeout(() => {
-                    magicSpell.style.boxShadow = '0 5px 15px rgba(68, 160, 141, 0.3)';
-                    magicSpell.style.background = 'linear-gradient(45deg, #4ecdc4, #44a08d)';
-                }, 1000);
+                async waitForMediaPipe() {
+                    // Чекаємо, поки завантажиться MediaPipe Tasks Vision
+                    return new Promise((resolve) => {
+                        const checkInterval = setInterval(() => {
+                            if (window.FaceLandmarker && window.FilesetResolver) {
+                                clearInterval(checkInterval);
+                                resolve();
+                            }
+                        }, 100);
+                        
+                        // Таймаут через 10 секунд
+                        setTimeout(() => {
+                            clearInterval(checkInterval);
+                            if (!window.FaceLandmarker) {
+                                console.error('MediaPipe не завантажився');
+                                this.handleError(new Error('MEDIAPIPE_LOAD_ERROR'));
+                            }
+                        }, 10000);
+                    });
+                }
+                
+                async init() {
+                    try {
+                        this.setupEventListeners();
+                        await this.setupCamera();
+                        await this.initFaceTracking();
+                        this.setupCanvas();
+                        this.hideLoading();
+                        this.startRenderLoop();
+                        this.updateDebug('status', 'debug-good', '✅ Готово');
+                    } catch (error) {
+                        this.handleError(error);
+                    }
+                }
+                
+                // ========== КАМЕРА ==========
+                async setupCamera() {
+                    try {
+                        const constraints = {
+                            video: {
+                                facingMode: 'user',
+                                width: { ideal: 1280 },
+                                height: { ideal: 720 },
+                                frameRate: { ideal: 30 }
+                            }
+                        };
+                        
+                        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                        elements.video.srcObject = stream;
+                        state.videoStream = stream;
+                        
+                        await new Promise((resolve) => {
+                            elements.video.onloadedmetadata = () => {
+                                elements.video.play();
+                                resolve();
+                            };
+                        });
+                        
+                    } catch (error) {
+                        console.error('Помилка камери:', error);
+                        throw new Error('CAMERA_ERROR');
+                    }
+                }
+                
+                async switchCamera() {
+                    if (!state.videoStream) return;
+                    
+                    // Зупиняємо поточний потік
+                    state.videoStream.getTracks().forEach(track => track.stop());
+                    
+                    // Змінюємо камеру
+                    state.isFrontCamera = !state.isFrontCamera;
+                    const facingMode = state.isFrontCamera ? 'user' : 'environment';
+                    
+                    try {
+                        const constraints = {
+                            video: {
+                                facingMode: facingMode,
+                                width: { ideal: 1280 },
+                                height: { ideal: 720 },
+                                frameRate: { ideal: 30 }
+                            }
+                        };
+                        
+                        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                        elements.video.srcObject = stream;
+                        state.videoStream = stream;
+                        
+                        // Дзеркальне відображення тільки для фронтальної камери
+                        elements.video.style.transform = state.isFrontCamera ? 'scaleX(-1)' : 'scaleX(1)';
+                        
+                    } catch (error) {
+                        console.error('Помилка перемикання камери:', error);
+                        // Повертаємося до попередньої камери
+                        state.isFrontCamera = !state.isFrontCamera;
+                    }
+                }
+                
+                // ========== FACE TRACKING (MediaPipe) ==========
+                async initFaceTracking() {
+                    try {
+                        this.updateDebug('status', 'debug-value', 'Завантаження MediaPipe...');
+                        
+                        // Використовуємо глобальні об'єкти MediaPipe
+                        if (!window.FilesetResolver || !window.FaceLandmarker) {
+                            throw new Error('MediaPipe не завантажено');
+                        }
+                        
+                        const vision = await window.FilesetResolver.forVisionTasks(
+                            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+                        );
+                        
+                        state.faceLandmarker = await window.FaceLandmarker.createFromOptions(vision, {
+                            baseOptions: {
+                                modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+                                delegate: "GPU"
+                            },
+                            outputFaceBlendshapes: true,
+                            runningMode: "VIDEO",
+                            numFaces: 1
+                        });
+                        
+                        this.updateDebug('status', 'debug-good', '✅ Face Tracking');
+                        return true;
+                        
+                    } catch (error) {
+                        console.error('Помилка MediaPipe:', error);
+                        this.updateDebug('status', 'debug-bad', '❌ Помилка');
+                        throw error;
+                    }
+                }
+                
+                detectFace() {
+                    if (!state.faceLandmarker || !state.isRunning) return;
+                    
+                    try {
+                        if (elements.video.readyState < 2) return;
+                        
+                        const results = state.faceLandmarker.detectForVideo(elements.video, performance.now());
+                        
+                        if (results.faceLandmarks && results.faceLandmarks.length > 0) {
+                            debug.faces.textContent = '1';
+                            debug.faces.className = 'debug-value debug-good';
+                            
+                            const landmarks = results.faceLandmarks[0];
+                            const blendshapes = results.faceBlendshapes?.[0] || [];
+                            
+                            // Аналізуємо посмішку
+                            this.analyzeSmile(landmarks, blendshapes);
+                            
+                        } else {
+                            debug.faces.textContent = '0';
+                            debug.faces.className = 'debug-value debug-bad';
+                            this.hideSmileIndicator();
+                        }
+                    } catch (error) {
+                        console.error('Помилка детекції обличчя:', error);
+                    }
+                }
+                
+                analyzeSmile(landmarks, blendshapes) {
+                    // Спосіб 1: Використовуємо blendshapes (більш точний)
+                    let smileScore = 0;
+                    
+                    if (blendshapes.length > 0) {
+                        // Шукаємо blendshape для посмішки
+                        const mouthSmileLeft = blendshapes.find(b => b.categoryName === 'mouthSmileLeft');
+                        const mouthSmileRight = blendshapes.find(b => b.categoryName === 'mouthSmileRight');
+                        
+                        if (mouthSmileLeft && mouthSmileRight) {
+                            smileScore = (mouthSmileLeft.score + mouthSmileRight.score) / 2;
+                        }
+                    }
+                    
+                    // Спосіб 2: Якщо blendshapes недоступні, використовуємо геометрію губ
+                    if (smileScore < 0.1 && landmarks.length > 400) {
+                        const leftMouth = landmarks[FACE_LANDMARKS.LEFT_MOUTH];
+                        const rightMouth = landmarks[FACE_LANDMARKS.RIGHT_MOUTH];
+                        const upperLip = landmarks[FACE_LANDMARKS.UPPER_LIP];
+                        const lowerLip = landmarks[FACE_LANDMARKS.LOWER_LIP];
+                        
+                        if (leftMouth && rightMouth && upperLip && lowerLip) {
+                            // Розраховуємо ширину та висоту рота
+                            const mouthWidth = Math.abs(rightMouth.x - leftMouth.x);
+                            const mouthHeight = Math.abs(lowerLip.y - upperLip.y);
+                            
+                            // Співвідношення висоти до ширини (посмішка = низьке співвідношення)
+                            const ratio = mouthHeight / mouthWidth;
+                            smileScore = Math.max(0, 1 - (ratio * 3));
+                        }
+                    }
+                    
+                    // Згладжуємо значення
+                    state.smileLevel = state.lastSmileLevel * (1 - CONFIG.SMOOTHING_FACTOR) + 
+                                      smileScore * CONFIG.SMOOTHING_FACTOR;
+                    state.lastSmileLevel = state.smileLevel;
+                    
+                    // Оновлюємо відображення
+                    const smilePercent = Math.round(state.smileLevel * 100);
+                    debug.smile.textContent = `${smilePercent}%`;
+                    debug.smile.className = smilePercent > 20 ? 'debug-value debug-good' : 'debug-value';
+                    
+                    // Перевіряємо, чи посміхається людина
+                    if (state.smileLevel > CONFIG.SMILE_THRESHOLD) {
+                        this.showSmileIndicator(smilePercent);
+                        
+                        // Додаємо поцілунки, якщо посмішка триває
+                        const now = Date.now();
+                        if (now - state.lastSmileTime > CONFIG.KISS_COOLDOWN) {
+                            this.addKisses(landmarks);
+                            state.lastSmileTime = now;
+                        }
+                    } else {
+                        this.hideSmileIndicator();
+                    }
+                    
+                    // Оновлюємо статистику
+                    if (state.smileLevel > state.stats.maxSmileLevel) {
+                        state.stats.maxSmileLevel = state.smileLevel;
+                    }
+                }
+                
+                // ========== ПОЦІЛУНКИ ==========
+                addKisses(landmarks) {
+                    if (landmarks.length < 400) return;
+                    
+                    // Координати щік
+                    const leftCheek = landmarks[FACE_LANDMARKS.LEFT_CHEEK];
+                    const rightCheek = landmarks[FACE_LANDMARKS.RIGHT_CHEEK];
+                    
+                    if (!leftCheek || !rightCheek) return;
+                    
+                    // Конвертуємо нормалізовані координати в пікселі
+                    const videoWidth = elements.video.videoWidth;
+                    const videoHeight = elements.video.videoHeight;
+                    const canvasWidth = elements.canvas.width;
+                    const canvasHeight = elements.canvas.height;
+                    
+                    // Ліва щока
+                    const leftX = (state.isFrontCamera ? (1 - leftCheek.x) : leftCheek.x) * videoWidth;
+                    const leftY = leftCheek.y * videoHeight;
+                    
+                    // Права щока
+                    const rightX = (state.isFrontCamera ? (1 - rightCheek.x) : rightCheek.x) * videoWidth;
+                    const rightY = rightCheek.y * videoHeight;
+                    
+                    // Масштабуємо до розміру canvas
+                    const scaleX = canvasWidth / videoWidth;
+                    const scaleY = canvasHeight / videoHeight;
+                    
+                    // Додаємо поцілунки на обидві щоки
+                    const kisses = [
+                        {
+                            x: leftX * scaleX,
+                            y: leftY * scaleY,
+                            size: CONFIG.KISS_SIZE * (0.8 + Math.random() * 0.4),
+                            rotation: Math.random() * Math.PI * 2,
+                            opacity: CONFIG.KISS_OPACITY,
+                            life: 1.0,
+                            decay: 0.01 + Math.random() * 0.02
+                        },
+                        {
+                            x: rightX * scaleX,
+                            y: rightY * scaleY,
+                            size: CONFIG.KISS_SIZE * (0.8 + Math.random() * 0.4),
+                            rotation: Math.random() * Math.PI * 2,
+                            opacity: CONFIG.KISS_OPACITY,
+                            life: 1.0,
+                            decay: 0.01 + Math.random() * 0.02
+                        }
+                    ];
+                    
+                    state.activeKisses.push(...kisses);
+                    state.kissCount += 2;
+                    state.stats.totalKisses += 2;
+                    
+                    // Оновлюємо відображення
+                    debug.kisses.textContent = state.stats.totalKisses;
+                    
+                    // Відтворюємо звук поцілунку
+                    this.playKissSound();
+                    
+                    // Створюємо конфеті
+                    this.createConfetti(kisses[0].x, kisses[0].y);
+                    this.createConfetti(kisses[1].x, kisses[1].y);
+                }
+                
+                updateKisses() {
+                    // Оновлюємо та малюємо активні поцілунки
+                    for (let i = state.activeKisses.length - 1; i >= 0; i--) {
+                        const kiss = state.activeKisses[i];
+                        
+                        // Зменшуємо життя
+                        kiss.life -= kiss.decay;
+                        kiss.opacity = CONFIG.KISS_OPACITY * kiss.life;
+                        
+                        if (kiss.life <= 0) {
+                            // Видаляємо поцілунки, які зникли
+                            state.activeKisses.splice(i, 1);
+                            continue;
+                        }
+                        
+                        // Малюємо поцілунок
+                        this.drawKiss(kiss);
+                    }
+                }
+                
+                drawKiss(kiss) {
+                    ctx.save();
+                    ctx.translate(kiss.x, kiss.y);
+                    ctx.rotate(kiss.rotation);
+                    ctx.globalAlpha = kiss.opacity;
+                    
+                    // Малюємо зображення поцілунка
+                    ctx.drawImage(
+                        kissImage,
+                        -kiss.size / 2,
+                        -kiss.size / 2,
+                        kiss.size,
+                        kiss.size
+                    );
+                    
+                    // Додаємо світіння
+                    ctx.globalAlpha = kiss.opacity * 0.3;
+                    ctx.fillStyle = '#ff6b6b';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, kiss.size / 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+                
+                // ========== КОНФЕТІ ==========
+                createConfetti(x, y) {
+                    for (let i = 0; i < 15; i++) {
+                        state.confetti.push({
+                            x: x,
+                            y: y,
+                            vx: (Math.random() - 0.5) * 10,
+                            vy: Math.random() * -15 - 5,
+                            size: Math.random() * 8 + 4,
+                            color: `hsl(${Math.random() * 60 + 0}, 100%, 65%)`, // Червоний спектр
+                            life: 1.0,
+                            gravity: 0.4,
+                            rotation: Math.random() * Math.PI * 2,
+                            spin: (Math.random() - 0.5) * 0.3
+                        });
+                    }
+                }
+                
+                updateConfetti() {
+                    for (let i = state.confetti.length - 1; i >= 0; i--) {
+                        const particle = state.confetti[i];
+                        
+                        particle.vy += particle.gravity;
+                        particle.x += particle.vx;
+                        particle.y += particle.vy;
+                        particle.life -= 0.015;
+                        particle.rotation += particle.spin;
+                        
+                        if (particle.life <= 0) {
+                            state.confetti.splice(i, 1);
+                            continue;
+                        }
+                        
+                        // Малюємо конфеті
+                        ctx.save();
+                        ctx.globalAlpha = particle.life;
+                        ctx.translate(particle.x, particle.y);
+                        ctx.rotate(particle.rotation);
+                        ctx.fillStyle = particle.color;
+                        ctx.fillRect(-particle.size/2, -particle.size/2, particle.size, particle.size);
+                        ctx.restore();
+                    }
+                }
+                
+                // ========== АУДІО ==========
+                playKissSound() {
+                    if (!state.isSoundOn) return;
+                    
+                    try {
+                        elements.kissSound.currentTime = 0;
+                        elements.kissSound.play().catch(e => console.log('Звук поцілунку не відтворився:', e));
+                    } catch (error) {
+                        console.error('Помилка відтворення звуку:', error);
+                    }
+                }
+                
+                toggleSound() {
+                    state.isSoundOn = !state.isSoundOn;
+                    
+                    if (state.isSoundOn) {
+                        // Спершу пробуємо локальний файл
+                        elements.backgroundMusic.src = 'fon.mp3';
+                        elements.backgroundMusic.play().catch(e => {
+                            console.log('Не вдалося відтворити локальну музику, використовуючи резервну версію:', e);
+                            // Резервна фонова музика з інтернету
+                            elements.backgroundMusic.src = 'https://assets.mixkit.co/music/preview/mixkit-clear-sky-479.mp3';
+                            elements.backgroundMusic.play().catch(e => console.log('Резервна музика теж не спрацювала:', e));
+                        });
+                        elements.soundBtn.textContent = '🔊';
+                    } else {
+                        elements.backgroundMusic.pause();
+                        elements.soundBtn.textContent = '🔇';
+                    }
+                }
+                
+                // ========== ІНТЕРФЕЙС ==========
+                showSmileIndicator(percent) {
+                    const smileText = percent > 50 ? 'Чудова посмішка! 💋' : 
+                                     percent > 30 ? 'Тримайте посмішку! 😊' : 
+                                     'Посміхніться для поцілунків!';
+                    
+                    document.getElementById('smileText').textContent = smileText;
+                    elements.smileIndicator.style.display = 'flex';
+                    elements.smileIndicator.style.animation = 'fade-in 0.3s ease';
+                }
+                
+                hideSmileIndicator() {
+                    elements.smileIndicator.style.display = 'none';
+                }
+                
+                showLoading(text) {
+                    elements.loadingText.textContent = text;
+                    elements.loading.style.display = 'flex';
+                }
+                
+                hideLoading() {
+                    elements.loading.style.display = 'none';
+                    elements.startButton.style.display = 'none';
+                    elements.title.style.display = 'block';
+                    state.isRunning = true;
+                    
+                    // Автоматично запускаємо музику при старті
+                    setTimeout(() => {
+                        if (state.isSoundOn) {
+                            this.toggleSound(); // Це запустить музику
+                        }
+                    }, 500);
+                }
+                
+                // ========== CANVAS ==========
+                setupCanvas() {
+                    elements.canvas.width = window.innerWidth;
+                    elements.canvas.height = window.innerHeight;
+                    
+                    // Ресайз canvas при зміні розміру вікна
+                    window.addEventListener('resize', () => {
+                        elements.canvas.width = window.innerWidth;
+                        elements.canvas.height = window.innerHeight;
+                    });
+                }
+                
+                clearCanvas() {
+                    ctx.clearRect(0, 0, elements.canvas.width, elements.canvas.height);
+                }
+                
+                // ========== ГЛАВНИЙ ЦИКЛ ==========
+                startRenderLoop() {
+                    const render = (currentTime) => {
+                        if (currentTime - state.lastRenderTime >= 1000 / CONFIG.TARGET_FPS) {
+                            if (state.isRunning) {
+                                this.clearCanvas();
+                                this.detectFace();
+                                this.updateKisses();
+                                this.updateConfetti();
+                            }
+                            state.lastRenderTime = currentTime;
+                        }
+                        state.animationFrameId = requestAnimationFrame(render);
+                    };
+                    render(performance.now());
+                }
+                
+                // ========== ОБРОБНИКИ ПОДІЙ ==========
+                setupEventListeners() {
+                    // Запуск додатку
+                    elements.startButton.addEventListener('click', () => this.hideLoading());
+                    
+                    // Звук
+                    elements.soundBtn.addEventListener('click', () => this.toggleSound());
+                    
+                    // Камера
+                    elements.cameraBtn.addEventListener('click', () => this.switchCamera());
+                    
+                    // Автоматичний запуск при кліку на сторінку (для розблокування аудіо)
+                    document.addEventListener('click', () => {
+                        if (!state.isRunning) {
+                            this.hideLoading();
+                        }
+                        // Розблоковуємо аудіо контекст
+                        if (state.isSoundOn && elements.backgroundMusic.paused) {
+                            elements.backgroundMusic.play().catch(() => {});
+                        }
+                    }, { once: true });
+                }
+                
+                // ========== ДОПОМІЖНІ ФУНКЦІЇ ==========
+                updateDebug(elementId, className, text) {
+                    if (debug[elementId]) {
+                        debug[elementId].textContent = text;
+                        debug[elementId].className = `debug-value ${className}`;
+                    }
+                }
+                
+                handleError(error) {
+                    console.error('Помилка додатку:', error);
+                    
+                    let message = 'Невідома помилка';
+                    let details = '';
+                    
+                    if (error.message === 'CAMERA_ERROR') {
+                        message = 'Помилка доступу до камери';
+                        details = 'Дозвольте доступ до камери у налаштуваннях браузера';
+                    } else if (error.message.includes('MediaPipe')) {
+                        message = 'Помилка MediaPipe';
+                        details = 'Перевірте підключення до інтернету';
+                    } else if (error.message === 'MEDIAPIPE_LOAD_ERROR') {
+                        message = 'MediaPipe не завантажився';
+                        details = 'Оновіть сторінку або спробуйте інший браузер';
+                    }
+                    
+                    elements.loading.innerHTML = `
+                        <div style="color: #ff4757; font-size: 24px; margin-bottom: 15px;">${message}</div>
+                        <div style="color: white; font-size: 16px; margin-bottom: 20px; line-height: 1.4;">${details}</div>
+                        <button onclick="location.reload()" style="
+                            padding: 12px 24px;
+                            background: linear-gradient(135deg, #ff6b6b, #ff4757);
+                            border: none;
+                            color: white;
+                            font-size: 16px;
+                            font-weight: bold;
+                            cursor: pointer;
+                            border-radius: 25px;
+                            transition: all 0.3s ease;
+                        ">Спробувати знову</button>
+                    `;
+                }
+                
+                cleanup() {
+                    if (state.animationFrameId) {
+                        cancelAnimationFrame(state.animationFrameId);
+                    }
+                    if (state.videoStream) {
+                        state.videoStream.getTracks().forEach(track => track.stop());
+                    }
+                    if (state.faceLandmarker) {
+                        state.faceLandmarker.close();
+                    }
+                }
             }
-        }, 5000);
+            
+            // Запуск додатку при повному завантаженні сторінки
+            window.addEventListener('DOMContentLoaded', () => {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    elements.loading.innerHTML = `
+                        <div style="color: #ff4757; font-size: 24px; margin-bottom: 15px;">Браузер не підтримує</div>
+                        <div style="color: white; font-size: 16px; margin-bottom: 20px; line-height: 1.4;">
+                            Ваш браузер не підтримує доступ до камери.<br>
+                            Спробуйте Chrome, Edge або Safari.
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Запускаємо додаток
+                new KissARApp();
+                
+                // Очистка при закритті
+                window.addEventListener('beforeunload', () => {
+                    if (window.appInstance) {
+                        window.appInstance.cleanup();
+                    }
+                });
+            });
+            
+            // Зберігаємо екземпляр для глобального доступу
+            window.appInstance = null;
+            
+        })();
     </script>
 </body>
 </html>
