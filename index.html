@@ -417,14 +417,14 @@
             
             // Конфігурація
             const CONFIG = {
-                SMILE_THRESHOLD: 0.15,     // Поріг посмішки
-                KISS_COOLDOWN: 800,        // Інтервал між поцілунками
-                EMOJI_SIZE: 75,            // Розмір емоджі
-                EMOJI_DURATION: 2000,      // Час життя емоджі
-                EMOJI_LIFETIME: 2000,      // Життя емоджі на щоках (2 секунди)
+                SMILE_THRESHOLD: 0.18,     // Поріг посмішки (трохи вище)
+                KISS_COOLDOWN: 300,        // Інтервал між поцілунками (коротше)
+                EMOJI_SIZE: 75,
+                EMOJI_DURATION: 2000,
+                EMOJI_LIFETIME: 1500,      // Життя емоджі на щоках (1.5 секунди)
                 SMOOTHING_FACTOR: 0.7,
                 TARGET_FPS: 30,
-                ONLY_EMOJIS: ['💋', '😘']  // ТІЛЬКИ ЦІ ДВА ЕМОДЖІ
+                ONLY_EMOJIS: ['💋', '😘']
             };
             
             // Ключові точки обличчя
@@ -476,7 +476,8 @@
                 lastResults: null,
                 audioContext: null,
                 isAudioUnlocked: false,
-                lastEmojiCleanup: 0
+                isSmiling: false,    // НОВИЙ: флаг посмішки
+                smileStartTime: 0    // НОВИЙ: час початку посмішки
             };
             
             // ========== АУДІО СИСТЕМА ==========
@@ -693,6 +694,7 @@
                         this.analyzeSmile(landmarks);
                     } else {
                         this.hideSmileIndicator();
+                        state.isSmiling = false; // Не видно обличчя - не посміхається
                     }
                 }
                 
@@ -716,26 +718,45 @@
                     state.lastSmileLevel = state.smileLevel;
                     
                     const smilePercent = Math.round(state.smileLevel * 100);
+                    const now = Date.now();
                     
-                    if (state.smileLevel > CONFIG.SMILE_THRESHOLD) {
+                    // ВИЗНАЧЕННЯ, ЧИ ПОСМІХАЄТЬСЯ
+                    const wasSmiling = state.isSmiling;
+                    state.isSmiling = state.smileLevel > CONFIG.SMILE_THRESHOLD;
+                    
+                    if (state.isSmiling) {
+                        // ЛЮДИНА ПОСМІХАЄТЬСЯ
+                        if (!wasSmiling) {
+                            state.smileStartTime = now; // Запам'ятовуємо час початку посмішки
+                        }
+                        
                         this.showSmileIndicator(smilePercent);
                         
-                        const now = Date.now();
                         if (now - state.lastSmileTime > CONFIG.KISS_COOLDOWN) {
                             this.addEmojis(landmarks);
                             state.lastSmileTime = now;
                         }
                     } else {
+                        // ЛЮДИНА НЕ ПОСМІХАЄТЬСЯ
                         this.hideSmileIndicator();
-                        // При зупинці посмішки - швидше зникають емоджі
-                        this.accelerateEmojiDecay();
+                        
+                        // ШВИДКО ЗНИКАЮТЬ ВСІ ЕМОДЖІ, коли перестаєш посміхатися
+                        this.removeAllEmojisQuickly();
                     }
                 }
                 
-                accelerateEmojiDecay() {
-                    // При зупинці посмішки - емоджі зникають швидше
+                // ШВИДКЕ ВИДАЛЕННЯ ВСІХ ЕМОДЖІ, коли не посміхається
+                removeAllEmojisQuickly() {
+                    const now = Date.now();
                     for (let i = state.activeEmojis.length - 1; i >= 0; i--) {
-                        state.activeEmojis[i].decay = 0.02; // Швидше зникнення
+                        const emoji = state.activeEmojis[i];
+                        // Швидке зникнення
+                        emoji.life -= 0.08; // Дуже швидко зникає
+                        emoji.opacity = Math.max(0, emoji.life);
+                        
+                        if (emoji.opacity <= 0.1) {
+                            state.activeEmojis.splice(i, 1);
+                        }
                     }
                 }
                 
@@ -765,8 +786,8 @@
                     const scaleY = canvasHeight / videoHeight;
                     
                     // ОБМЕЖУЄМО КІЛЬКІСТЬ ЕМОДЖІ
-                    if (state.activeEmojis.length > 10) {
-                        state.activeEmojis.splice(0, 2); // Видаляємо найстаріші
+                    if (state.activeEmojis.length > 8) {
+                        state.activeEmojis.splice(0, 2);
                     }
                     
                     state.activeEmojis.push({
@@ -777,7 +798,7 @@
                         rotation: Math.random() * 0.2 - 0.1,
                         opacity: 1,
                         life: 1.0,
-                        decay: 0.015, // ЗНИКНЕННЯ ЧЕРЕЗ 2-3 СЕКУНДИ
+                        decay: 0.02, // ЗНИКНЕННЯ ЧЕРЕЗ 1.5 СЕКУНДИ
                         createdAt: Date.now(),
                         maxLifetime: CONFIG.EMOJI_LIFETIME
                     });
@@ -790,7 +811,7 @@
                         rotation: Math.random() * 0.2 - 0.1,
                         opacity: 1,
                         life: 1.0,
-                        decay: 0.015,
+                        decay: 0.02,
                         createdAt: Date.now(),
                         maxLifetime: CONFIG.EMOJI_LIFETIME
                     });
@@ -824,7 +845,7 @@
                 }
                 
                 updateEmojis() {
-                    // Оновлюємо емоджі та видаляємо старі
+                    // Оновлюємо емоджі
                     const now = Date.now();
                     
                     // Очищаємо canvas
@@ -841,6 +862,11 @@
                             continue;
                         }
                         
+                        // Якщо людина не посміхається - емоджі зникають швидше
+                        if (!state.isSmiling) {
+                            emoji.decay = 0.08; // Дуже швидке зникнення
+                        }
+                        
                         // Зменшуємо прозорість
                         emoji.life -= emoji.decay;
                         emoji.opacity = Math.max(0, emoji.life);
@@ -853,25 +879,6 @@
                         
                         // Малюємо емоджі
                         this.drawEmoji(emoji);
-                    }
-                    
-                    // Автоматична очистка старих емоджі кожні 5 секунд
-                    if (now - state.lastEmojiCleanup > 5000) {
-                        this.cleanupOldEmojis();
-                        state.lastEmojiCleanup = now;
-                    }
-                }
-                
-                cleanupOldEmojis() {
-                    const now = Date.now();
-                    for (let i = state.activeEmojis.length - 1; i >= 0; i--) {
-                        const emoji = state.activeEmojis[i];
-                        const age = now - emoji.createdAt;
-                        
-                        // Видаляємо емоджі старші 3 секунд
-                        if (age > 3000) {
-                            state.activeEmojis.splice(i, 1);
-                        }
                     }
                 }
                 
