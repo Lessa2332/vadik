@@ -3,160 +3,473 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR </title>
+    <title>AR CASINO SLOTS</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background: #000;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            font-family: 'Arial Black', 'Arial Bold', Gadget, sans-serif;
+            color: #fff;
         }
 
-        .controls {
-            position: absolute;
-            bottom: 30px;
+        /* Металічна рамка */
+        .metal-frame {
+            position: fixed;
+            top: 0;
             left: 0;
             right: 0;
-            text-align: center;
-            z-index: 1000;
+            bottom: 0;
+            background: 
+                linear-gradient(90deg, 
+                    rgba(100, 100, 100, 0.1) 1px, 
+                    transparent 1px) 0 0 / 50px 50px,
+                linear-gradient(0deg, 
+                    rgba(100, 100, 100, 0.1) 1px, 
+                    transparent 1px) 0 0 / 50px 50px;
+            z-index: 1;
+            pointer-events: none;
         }
 
-        .button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            margin: 0 10px;
-            border-radius: 25px;
-            font-size: 18px;
+        /* Основні елементи інтерфейсу */
+        .casino-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 20px;
+            background: linear-gradient(180deg, 
+                rgba(0, 0, 0, 0.9) 0%, 
+                transparent 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, 
+                #ffd700, 
+                #ffed4e, 
+                #ffd700);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #000;
             font-weight: bold;
-            cursor: pointer;
-            min-width: 150px;
+            box-shadow: 0 0 30px #ffd700;
+            animation: logoGlow 2s infinite alternate;
         }
 
-        .button:disabled {
-            background: #666;
-            cursor: not-allowed;
+        @keyframes logoGlow {
+            0% { box-shadow: 0 0 20px #ffd700; }
+            100% { box-shadow: 0 0 40px #ffed4e; }
         }
 
-        .stop-btn {
-            background: #f44336;
+        .logo-text {
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(45deg, 
+                #ffd700, 
+                #ffed4e, 
+                #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
         }
 
-        .slots {
+        /* Слот машина */
+        .slot-machine {
             position: absolute;
-            top: 20px;
-            left: 0;
-            right: 0;
-            text-align: center;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 1000;
+            background: linear-gradient(145deg, 
+                rgba(20, 20, 20, 0.95),
+                rgba(40, 40, 40, 0.95));
+            border: 4px solid;
+            border-image: linear-gradient(45deg, 
+                #ffd700, 
+                #c9a227, 
+                #ffd700) 1;
+            border-radius: 20px;
+            padding: 25px 40px;
+            display: flex;
+            gap: 25px;
+            box-shadow: 
+                0 0 50px rgba(255, 215, 0, 0.3),
+                inset 0 0 50px rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
         }
 
         .slot {
-            display: inline-block;
-            width: 80px;
-            height: 80px;
-            margin: 0 5px;
-            border: 2px solid #4CAF50;
-            border-radius: 10px;
-            background: rgba(0,0,0,0.7);
+            width: 120px;
+            height: 160px;
+            background: linear-gradient(180deg, 
+                #2a2a2a 0%,
+                #1a1a1a 50%,
+                #0a0a0a 100%);
+            border-radius: 15px;
             overflow: hidden;
+            position: relative;
+            border: 3px solid #333;
+            box-shadow: 
+                inset 0 0 30px rgba(0, 0, 0, 0.9),
+                0 10px 30px rgba(0, 0, 0, 0.7);
+            transition: all 0.3s ease;
+        }
+
+        .slot.active {
+            border-color: #ffd700;
+            box-shadow: 
+                inset 0 0 30px rgba(255, 215, 0, 0.3),
+                0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .slot::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                transparent 30%, 
+                rgba(255, 215, 0, 0.1) 50%, 
+                transparent 70%);
+            animation: slotShine 3s infinite linear;
+        }
+
+        @keyframes slotShine {
+            0% { transform: translateX(-100%) skewX(-15deg); }
+            100% { transform: translateX(200%) skewX(-15deg); }
         }
 
         .slot img {
             width: 100%;
             height: 100%;
             object-fit: contain;
+            padding: 15px;
+            filter: brightness(1.3);
+            position: relative;
+            z-index: 2;
         }
 
-        .result {
+        /* Сканер язика */
+        .tongue-scanner {
             position: absolute;
-            top: 50%;
+            bottom: 200px;
             left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9);
-            padding: 20px;
-            border-radius: 15px;
+            transform: translateX(-50%);
+            z-index: 1000;
             text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ff6b6b;
+            border-radius: 15px;
+            padding: 20px 40px;
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
+        }
+
+        .tongue-status {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .tongue-instruction {
+            font-size: 16px;
+            color: #aaa;
+        }
+
+        .tongue-pulse {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            background: radial-gradient(circle, 
+                rgba(255, 107, 107, 0.8) 0%,
+                rgba(255, 107, 107, 0.4) 50%,
+                transparent 70%);
+            border-radius: 50%;
+            animation: tonguePulse 1.5s infinite;
+        }
+
+        @keyframes tonguePulse {
+            0% { transform: scale(0.8); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.8); opacity: 0.7; }
+        }
+
+        /* Результат */
+        .result-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
             z-index: 2000;
             display: none;
-            border: 2px solid #4CAF50;
+            align-items: center;
+            justify-content: center;
         }
 
-        .result-img {
-            width: 200px;
-            height: 200px;
-            margin: 15px 0;
+        .result-card {
+            background: linear-gradient(145deg, 
+                rgba(30, 30, 30, 0.95),
+                rgba(50, 50, 50, 0.95));
+            border: 5px solid;
+            border-image: linear-gradient(45deg, 
+                #4CAF50, 
+                #8BC34A, 
+                #4CAF50) 1;
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 500px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        .result img {
-            width: 100%;
-            height: 100%;
+        .result-title {
+            font-size: 36px;
+            font-weight: 900;
+            background: linear-gradient(45deg, 
+                #4CAF50, 
+                #8BC34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        .result-mask {
+            width: 250px;
+            height: 250px;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .result-mask img {
+            width: 90%;
+            height: 90%;
             object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(76, 175, 80, 0.5));
         }
 
-        .close-btn {
-            background: #f44336;
+        .result-btn {
+            background: linear-gradient(45deg, 
+                #4CAF50, 
+                #388E3C);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 25px;
             cursor: pointer;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .result-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.7);
+        }
+
+        /* Стрічки виграшу */
+        .win-ribbon {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, 
+                #ffd700, 
+                #ffed4e, 
+                #ffd700);
+            color: #000;
+            padding: 10px 40px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+        }
+
+        /* Кнопки */
+        .control-btn {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: linear-gradient(45deg, 
+                #2196F3, 
+                #1976D2);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            box-shadow: 0 10px 30px rgba(33, 150, 243, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 15px 40px rgba(33, 150, 243, 0.7);
+        }
+
+        .control-btn:disabled {
+            background: linear-gradient(45deg, 
+                #666, 
+                #444);
+            cursor: not-allowed;
+            transform: translateX(-50%);
+            box-shadow: none;
+        }
+
+        /* Ефекти частинок */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 500;
+        }
+
+        .coin {
+            background: radial-gradient(circle at 30% 30%, 
+                #ffd700, 
+                #c9a227);
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ffd700;
+        }
+
+        .sparkle {
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 5px white;
         }
     </style>
 </head>
 <body>
-    <!-- Слоти для відображення масок -->
-    <div class="slots">
-        <div class="slot">
-            <img id="slot1" src="masks/mask1.png" alt="Слот 1">
+    <!-- Металічна текстура фону -->
+    <div class="metal-frame"></div>
+
+    <!-- Шапка казино -->
+    <div class="casino-header">
+        <div class="logo">
+            <div class="logo-icon">♠️</div>
+            <div class="logo-text">AR CASINO</div>
         </div>
-        <div class="slot">
-            <img id="slot2" src="masks/mask1.png" alt="Слот 2">
-        </div>
-        <div class="slot">
-            <img id="slot3" src="masks/mask1.png" alt="Слот 3">
+        <div class="tongue-scanner">
+            <div class="tongue-status" id="tongueStatus">ШОКАЙ ЯЗИК!</div>
+            <div class="tongue-pulse" id="tonguePulse"></div>
+            <div class="tongue-instruction">Покажи язик щоб запустити слоти</div>
         </div>
     </div>
 
-    <!-- Кнопки управління -->
-    <div class="controls">
-        <button class="button" id="startBtn" onclick="startGame()">
-            ▶️ СТАРТ
-        </button>
-        <button class="button stop-btn" id="stopBtn" onclick="stopGame()" disabled>
-            ⏹️ СТОП
-        </button>
+    <!-- Слот машина -->
+    <div class="slot-machine" id="slotMachine">
+        <div class="slot" id="slot1">
+            <img src="masks/mask1.png" alt="Слот 1">
+        </div>
+        <div class="slot" id="slot2">
+            <img src="masks/mask1.png" alt="Слот 2">
+        </div>
+        <div class="slot" id="slot3">
+            <img src="masks/mask1.png" alt="Слот 3">
+        </div>
     </div>
 
-    <!-- Панель результату -->
-    <div class="result" id="resultPanel">
-        <h3 style="color: #4CAF50; margin: 0 0 15px 0;">Результат</h3>
-        <div class="result-img">
-            <img id="resultImg" src="" alt="Результат">
+    <!-- Кнопка -->
+    <button class="control-btn" id="manualBtn" onclick="manualStart()">
+        ⚡ РУЧНИЙ ЗАПУСК
+    </button>
+
+    <!-- Результат -->
+    <div class="result-overlay" id="resultPanel">
+        <div class="result-card">
+            <div class="win-ribbon">ВИГРАШ!</div>
+            <h2 class="result-title">ТВІЙ ВИБІР</h2>
+            <div class="result-mask">
+                <img id="resultImg" src="" alt="Результат">
+            </div>
+            <button class="result-btn" onclick="closeResult()">ГРАТИ ЩЕ</button>
         </div>
-        <button class="close-btn" onclick="closeResult()">OK</button>
     </div>
 
     <!-- AR сцена -->
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" renderer="logarithmicDepthBuffer: true;">
-        <!-- Маркер обличчя -->
-        <a-marker type="face" id="face-marker">
-            <!-- Маска на обличчі -->
-            <a-entity id="mask-entity"
-                     position="0 0.15 0.05"
-                     scale="0.2 0.2 0.2"
-                     geometry="primitive: plane"
-                     material="src: #mask1; transparent: true; opacity: 1.0">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; maxDetectionRate: 60;" 
+             renderer="logarithmicDepthBuffer: true; precision: medium;">
+        
+        <!-- Маркер обличчя з трекінгом язика -->
+        <a-marker type="face" id="face-marker" face-tracking>
+            <!-- Основа для маски -->
+            <a-entity id="mask-base"
+                     position="0 0.2 0.05"
+                     scale="0.25 0.25 0.25">
+                <!-- Маска -->
+                <a-entity id="mask-entity"
+                         geometry="primitive: plane"
+                         material="src: #mask1; transparent: true; side: double; alphaTest: 0.5"
+                         rotation="0 0 0">
+                </a-entity>
+            </a-entity>
+
+            <!-- Точка для язика -->
+            <a-entity id="tongue-marker"
+                     position="0 -0.05 0.08"
+                     visible="false">
+                <a-sphere radius="0.01" 
+                         color="#FF6B6B"
+                         opacity="0.7"
+                         animation__pulse="property: scale; 
+                                          to: 2 2 2; 
+                                          dir: alternate; 
+                                          dur: 1000; 
+                                          loop: true">
+                </a-sphere>
             </a-entity>
         </a-marker>
 
         <!-- Камера -->
-        <a-entity camera></a-entity>
+        <a-entity camera position="0 0 0"></a-entity>
 
-        <!-- Ассети (PNG файли масок) -->
+        <!-- Ассети -->
         <a-assets>
             <img id="mask1" src="masks/mask1.png">
             <img id="mask2" src="masks/mask2.png">
@@ -164,58 +477,144 @@
             <img id="mask4" src="masks/mask4.png">
             <img id="mask5" src="masks/mask5.png">
         </a-assets>
+
+        <!-- Світло -->
+        <a-entity light="type: ambient; color: #FFF; intensity: 0.6"></a-entity>
+        <a-entity light="type: directional; color: #FFF; intensity: 0.8" position="-1 2 1"></a-entity>
+        
     </a-scene>
 
     <script>
-        // Маски (PNG файли)
+        // Конфігурація
         const masks = ['mask1', 'mask2', 'mask3', 'mask4', 'mask5'];
         
         // Стан гри
         let gameState = {
             isSpinning: false,
             currentMask: 'mask1',
-            spinInterval: null,
-            finalMask: null,
-            slotIntervals: []
+            tongueDetected: false,
+            tongueInterval: null,
+            slotIntervals: [],
+            lastTonguePosition: { x: 0, y: 0, z: 0 },
+            tongueStickOut: false
         };
 
-        // Початкова настройка
+        // Ініціалізація
         window.addEventListener('DOMContentLoaded', () => {
-            // Встановлюємо першу маску
+            // Встановлюємо стартову маску
             setMask('mask1');
             
             // Налаштовуємо слоти
             const defaultImg = document.getElementById('mask1').src;
             ['slot1', 'slot2', 'slot3'].forEach(slotId => {
-                document.getElementById(slotId).src = defaultImg;
+                document.getElementById(slotId).querySelector('img').src = defaultImg;
             });
             
-            // Налаштовуємо клавіатуру
-            document.addEventListener('keydown', (e) => {
-                if (e.code === 'Space') {
-                    e.preventDefault();
-                    if (gameState.isSpinning) {
-                        stopGame();
-                    } else {
-                        startGame();
-                    }
-                }
-            });
+            // Запускаємо трекінг язика
+            startTongueTracking();
+            
+            // Додаємо частинки
+            createParticles();
         });
+
+        // Трекінг язика
+        function startTongueTracking() {
+            gameState.tongueInterval = setInterval(() => {
+                const tongueMarker = document.getElementById('tongue-marker');
+                if (tongueMarker) {
+                    const position = tongueMarker.getAttribute('position');
+                    const currentPos = { 
+                        x: position.x, 
+                        y: position.y, 
+                        z: position.z 
+                    };
+                    
+                    // Відстань між поточною і попередньою позицією
+                    const distance = Math.sqrt(
+                        Math.pow(currentPos.x - gameState.lastTonguePosition.x, 2) +
+                        Math.pow(currentPos.y - gameState.lastTonguePosition.y, 2) +
+                        Math.pow(currentPos.z - gameState.lastTonguePosition.z, 2)
+                    );
+                    
+                    // Язик вважаємо показаним, якщо він рухається вперед (z збільшується)
+                    const tongueOut = currentPos.z > 0.05 && distance > 0.01;
+                    
+                    if (tongueOut && !gameState.tongueStickOut) {
+                        // Язик тільки що показали
+                        gameState.tongueStickOut = true;
+                        tongueDetected();
+                    } else if (!tongueOut && gameState.tongueStickOut) {
+                        // Язик тільки що сховали
+                        gameState.tongueStickOut = false;
+                    }
+                    
+                    gameState.lastTonguePosition = currentPos;
+                    
+                    // Оновлюємо статус
+                    updateTongueStatus(tongueOut);
+                }
+            }, 100);
+        }
+
+        // Оновлення статусу язика
+        function updateTongueStatus(isOut) {
+            const statusElement = document.getElementById('tongueStatus');
+            const pulseElement = document.getElementById('tonguePulse');
+            
+            if (isOut) {
+                statusElement.textContent = 'ЯЗИК ВИЯВЛЕНО!';
+                statusElement.style.color = '#4CAF50';
+                pulseElement.style.background = 'radial-gradient(circle, rgba(76, 175, 80, 0.8) 0%, rgba(76, 175, 80, 0.4) 50%, transparent 70%)';
+            } else {
+                statusElement.textContent = 'ШОКАЙ ЯЗИК!';
+                statusElement.style.color = '#FF6B6B';
+                pulseElement.style.background = 'radial-gradient(circle, rgba(255, 107, 107, 0.8) 0%, rgba(255, 107, 107, 0.4) 50%, transparent 70%)';
+            }
+        }
+
+        // Виявлення язика
+        function tongueDetected() {
+            if (gameState.isSpinning) return;
+            
+            // Ефект виявлення
+            createSparkleEffect();
+            
+            // Запускаємо гру через 500мс
+            setTimeout(() => {
+                if (!gameState.isSpinning) {
+                    startGame();
+                }
+            }, 500);
+        }
+
+        // Ручний запуск
+        function manualStart() {
+            if (!gameState.isSpinning) {
+                createSparkleEffect();
+                setTimeout(() => startGame(), 300);
+            }
+        }
 
         // Початок гри
         function startGame() {
             if (gameState.isSpinning) return;
             
             gameState.isSpinning = true;
-            document.getElementById('startBtn').disabled = true;
-            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('manualBtn').disabled = true;
+            
+            // Анімація слотів
+            activateSlots();
             
             // Запускаємо зміну масок
-            gameState.spinInterval = setInterval(changeMask, 100);
+            gameState.maskInterval = setInterval(changeMask, 80);
             
             // Запускаємо слоти
-            startSlots();
+            startSlotAnimation();
+            
+            // Автоматична зупинка через випадковий час
+            setTimeout(() => {
+                stopGame();
+            }, 2000 + Math.random() * 1000);
         }
 
         // Зупинка гри
@@ -223,24 +622,42 @@
             if (!gameState.isSpinning) return;
             
             gameState.isSpinning = false;
-            clearInterval(gameState.spinInterval);
+            clearInterval(gameState.maskInterval);
             
-            // Обираємо фінальну маску
+            // Вибираємо фінальну маску
             const randomMask = masks[Math.floor(Math.random() * masks.length)];
-            gameState.finalMask = randomMask;
+            gameState.currentMask = randomMask;
             
             // Встановлюємо маску
             setMask(randomMask);
             
             // Зупиняємо слоти
-            stopSlots(randomMask);
+            stopSlotAnimation(randomMask);
             
-            // Кнопки
-            document.getElementById('startBtn').disabled = false;
-            document.getElementById('stopBtn').disabled = true;
+            // Кнопка
+            document.getElementById('manualBtn').disabled = false;
             
-            // Показуємо результат
-            showResult(randomMask);
+            // Показуємо результат через затримку
+            setTimeout(() => showResult(randomMask), 1000);
+            
+            // Ефекти виграшу
+            createWinEffects();
+        }
+
+        // Активація слотів
+        function activateSlots() {
+            const slots = document.querySelectorAll('.slot');
+            slots.forEach(slot => {
+                slot.classList.add('active');
+            });
+        }
+
+        // Деактивація слотів
+        function deactivateSlots() {
+            const slots = document.querySelectorAll('.slot');
+            slots.forEach(slot => {
+                slot.classList.remove('active');
+            });
         }
 
         // Зміна маски
@@ -252,42 +669,59 @@
             setMask(randomMask);
         }
 
-        // Встановлення маски на обличчя
+        // Встановлення маски
         function setMask(maskId) {
             const maskEntity = document.getElementById('mask-entity');
             maskEntity.setAttribute('material', 'src', '#' + maskId);
         }
 
-        // Запуск слотів
-        function startSlots() {
-            // Очищаємо попередні інтервали
+        // Анімація слотів
+        function startSlotAnimation() {
+            const slots = ['slot1', 'slot2', 'slot3'];
+            
             gameState.slotIntervals.forEach(clearInterval);
             gameState.slotIntervals = [];
             
-            // Запускаємо нові інтервали
-            ['slot1', 'slot2', 'slot3'].forEach((slotId, index) => {
+            slots.forEach((slotId, index) => {
+                const slotElement = document.getElementById(slotId);
+                let frame = 0;
+                
                 const interval = setInterval(() => {
                     const randomMask = masks[Math.floor(Math.random() * masks.length)];
                     const maskImg = document.getElementById(randomMask);
-                    document.getElementById(slotId).src = maskImg.src;
-                }, 100 + (index * 50));
+                    slotElement.querySelector('img').src = maskImg.src;
+                    
+                    // 3D ефект обертання
+                    frame++;
+                    const rotation = Math.sin(frame * 0.1) * 5;
+                    slotElement.style.transform = `perspective(1000px) rotateX(${rotation}deg)`;
+                    
+                }, 100 + (index * 30));
                 
                 gameState.slotIntervals.push(interval);
             });
         }
 
-        // Зупинка слотів
-        function stopSlots(finalMask) {
-            // Зупиняємо всі інтервали
+        // Зупинка анімації слотів
+        function stopSlotAnimation(finalMask) {
+            deactivateSlots();
+            
             gameState.slotIntervals.forEach(clearInterval);
             gameState.slotIntervals = [];
             
-            // Встановлюємо фінальну маску в слоти
             const finalImg = document.getElementById(finalMask).src;
-            ['slot1', 'slot2', 'slot3'].forEach((slotId, index) => {
+            const slots = ['slot1', 'slot2', 'slot3'];
+            
+            slots.forEach((slotId, index) => {
                 setTimeout(() => {
-                    document.getElementById(slotId).src = finalImg;
-                }, index * 200);
+                    const slotElement = document.getElementById(slotId);
+                    slotElement.querySelector('img').src = finalImg;
+                    slotElement.style.transform = 'perspective(1000px) rotateX(0deg)';
+                    
+                    // Ефект зупинки
+                    createCoinEffect(slotElement);
+                    
+                }, index * 300);
             });
         }
 
@@ -296,17 +730,139 @@
             const resultPanel = document.getElementById('resultPanel');
             const resultImg = document.getElementById('resultImg');
             
-            // Встановлюємо зображення результату
             const maskImg = document.getElementById(maskId);
             resultImg.src = maskImg.src;
             
-            // Показуємо панель
-            resultPanel.style.display = 'block';
+            resultPanel.style.display = 'flex';
+            resultPanel.style.animation = 'none';
+            setTimeout(() => {
+                resultPanel.style.opacity = '0';
+                resultPanel.style.transform = 'scale(0.8)';
+                resultPanel.style.display = 'flex';
+                setTimeout(() => {
+                    resultPanel.style.transition = 'all 0.5s ease';
+                    resultPanel.style.opacity = '1';
+                    resultPanel.style.transform = 'scale(1)';
+                }, 10);
+            }, 10);
         }
 
         // Закриття результату
         function closeResult() {
-            document.getElementById('resultPanel').style.display = 'none';
+            const resultPanel = document.getElementById('resultPanel');
+            resultPanel.style.display = 'none';
+        }
+
+        // Ефекти
+        function createParticles() {
+            for (let i = 0; i < 30; i++) {
+                createParticle();
+            }
+        }
+
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            if (Math.random() > 0.5) {
+                particle.classList.add('coin');
+                particle.style.width = particle.style.height = Math.random() * 10 + 5 + 'px';
+            } else {
+                particle.classList.add('sparkle');
+                particle.style.width = particle.style.height = Math.random() * 5 + 2 + 'px';
+            }
+            
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.top = Math.random() * 100 + 'vh';
+            particle.style.animation = `float ${Math.random() * 10 + 5}s infinite linear`;
+            
+            document.body.appendChild(particle);
+            
+            // Видаляємо через час
+            setTimeout(() => particle.remove(), 15000);
+        }
+
+        function createSparkleEffect() {
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'particle sparkle';
+                    sparkle.style.width = sparkle.style.height = Math.random() * 8 + 4 + 'px';
+                    sparkle.style.left = Math.random() * 100 + 'vw';
+                    sparkle.style.top = Math.random() * 100 + 'vh';
+                    
+                    document.body.appendChild(sparkle);
+                    
+                    sparkle.animate([
+                        { transform: 'scale(1)', opacity: 1 },
+                        { transform: 'scale(0)', opacity: 0 }
+                    ], {
+                        duration: 1000,
+                        easing: 'ease-out'
+                    }).onfinish = () => sparkle.remove();
+                }, i * 50);
+            }
+        }
+
+        function createCoinEffect(element) {
+            const rect = element.getBoundingClientRect();
+            
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const coin = document.createElement('div');
+                    coin.className = 'particle coin';
+                    coin.style.width = coin.style.height = '15px';
+                    coin.style.left = rect.left + rect.width / 2 + 'px';
+                    coin.style.top = rect.top + rect.height / 2 + 'px';
+                    
+                    document.body.appendChild(coin);
+                    
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * 100 + 50;
+                    
+                    coin.animate([
+                        { 
+                            transform: 'translate(0, 0) scale(1) rotate(0deg)', 
+                            opacity: 1 
+                        },
+                        { 
+                            transform: `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px) scale(0) rotate(720deg)`, 
+                            opacity: 0 
+                        }
+                    ], {
+                        duration: 1500,
+                        easing: 'ease-out'
+                    }).onfinish = () => coin.remove();
+                }, i * 100);
+            }
+        }
+
+        function createWinEffects() {
+            // Конфетті
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'particle';
+                    confetti.style.width = Math.random() * 15 + 5 + 'px';
+                    confetti.style.height = Math.random() * 10 + 5 + 'px';
+                    confetti.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.top = '-20px';
+                    confetti.style.borderRadius = '2px';
+                    
+                    document.body.appendChild(confetti);
+                    
+                    const duration = Math.random() * 2000 + 1000;
+                    
+                    confetti.animate([
+                        { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
+                        { transform: `translateY(${window.innerHeight + 100}px) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                    ], {
+                        duration: duration,
+                        easing: 'cubic-bezier(0.1, 0.8, 0.2, 1)'
+                    }).onfinish = () => confetti.remove();
+                }, i * 50);
+            }
         }
     </script>
 </body>
