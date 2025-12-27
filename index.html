@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebAR Гра</title>
+    <title>AR </title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
@@ -11,92 +11,92 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            font-family: Arial, sans-serif;
             background: #000;
         }
-       
+
         .controls {
             position: absolute;
-            bottom: 20px;
+            bottom: 30px;
             left: 0;
             right: 0;
             text-align: center;
             z-index: 1000;
         }
-       
-        .game-info {
-            position: absolute;
-            top: 10px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            color: white;
-            z-index: 1000;
-            background: rgba(0,0,0,0.7);
-            padding: 10px;
-            border-bottom: 2px solid #4CAF50;
-        }
-       
+
         .button {
-            background: linear-gradient(45deg, #4CAF50, #2E7D32);
+            background: #4CAF50;
             color: white;
             border: none;
-            padding: 15px 30px;
-            margin: 10px;
-            border-radius: 50px;
+            padding: 15px 40px;
+            margin: 0 10px;
+            border-radius: 25px;
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             min-width: 150px;
         }
-       
-        .button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+
+        .button:disabled {
+            background: #666;
+            cursor: not-allowed;
         }
-       
-        .button:active {
-            transform: translateY(1px);
-        }
-       
+
         .stop-btn {
-            background: linear-gradient(45deg, #f44336, #c62828);
+            background: #f44336;
         }
-       
-        .counter {
-            font-size: 24px;
-            color: #4CAF50;
-            font-weight: bold;
-            margin-left: 10px;
+
+        .slots {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 1000;
         }
-       
+
+        .slot {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            margin: 0 5px;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.7);
+            overflow: hidden;
+        }
+
+        .slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
         .result {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.9);
-            color: white;
-            padding: 30px;
-            border-radius: 20px;
+            padding: 20px;
+            border-radius: 15px;
             text-align: center;
             z-index: 2000;
             display: none;
-            border: 3px solid #4CAF50;
+            border: 2px solid #4CAF50;
         }
-       
-        .result h2 {
-            color: #4CAF50;
-            margin-bottom: 20px;
+
+        .result-img {
+            width: 200px;
+            height: 200px;
+            margin: 15px 0;
         }
-       
-        .result-mask {
-            font-size: 48px;
-            margin: 20px 0;
+
+        .result img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
-       
+
         .close-btn {
             background: #f44336;
             color: white;
@@ -104,99 +104,59 @@
             padding: 10px 20px;
             border-radius: 10px;
             cursor: pointer;
-            margin-top: 20px;
-        }
-       
-        .current-mask {
-            color: #FF9800;
-            font-weight: bold;
-        }
-       
-        .slot-machine {
-            position: absolute;
-            top: 70px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            color: white;
-            z-index: 1000;
-        }
-       
-        .slot {
-            display: inline-block;
-            width: 100px;
-            height: 100px;
-            margin: 0 10px;
-            border: 3px solid #4CAF50;
-            border-radius: 10px;
-            overflow: hidden;
-            background: rgba(255,255,255,0.1);
-        }
-       
-        .slot img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
         }
     </style>
 </head>
 <body>
-    <div class="game-info">
-        <h2>🎭 AR Гра 🎭</h2>
-        <p>Натисніть START для запуску випадкового вибору!</p>
-    </div>
-   
-    <div class="slot-machine" id="slotMachine">
+    <!-- Слоти для відображення масок -->
+    <div class="slots">
         <div class="slot">
-            <img id="slot1" src="" alt="Маска 1">
+            <img id="slot1" src="masks/mask1.png" alt="Слот 1">
         </div>
         <div class="slot">
-            <img id="slot2" src="" alt="Маска 2">
+            <img id="slot2" src="masks/mask1.png" alt="Слот 2">
         </div>
         <div class="slot">
-            <img id="slot3" src="" alt="Маска 3">
+            <img id="slot3" src="masks/mask1.png" alt="Слот 3">
         </div>
     </div>
-   
+
+    <!-- Кнопки управління -->
     <div class="controls">
         <button class="button" id="startBtn" onclick="startGame()">
-            ▶️ START ГРИ
+            ▶️ СТАРТ
         </button>
         <button class="button stop-btn" id="stopBtn" onclick="stopGame()" disabled>
-            ⏹️ STOP
+            ⏹️ СТОП
         </button>
-        <span class="counter">
-            <span id="currentTime">0.0</span>с
-        </span>
     </div>
-   
+
+    <!-- Панель результату -->
     <div class="result" id="resultPanel">
-        <h2>🎉 Супер! 🎉</h2>
-        <div class="result-mask" id="resultMask">🎭</div>
-        <p>Вітаю!</p>
-        <button class="close-btn" onclick="closeResult()">Продовжити гру</button>
+        <h3 style="color: #4CAF50; margin: 0 0 15px 0;">Результат</h3>
+        <div class="result-img">
+            <img id="resultImg" src="" alt="Результат">
+        </div>
+        <button class="close-btn" onclick="closeResult()">OK</button>
     </div>
+
+    <!-- AR сцена -->
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" renderer="logarithmicDepthBuffer: true;">
-        <!-- Маркер для трекінгу обличчя -->
-        <a-marker type="face" raycaster="objects: .clickable" emitevents="true"
-                  cursor="fuse: false; rayOrigin: mouse;"
-                  id="face-marker">
-           
-            <!-- Маска (динамічно змінюється) -->
+        <!-- Маркер обличчя -->
+        <a-marker type="face" id="face-marker">
+            <!-- Маска на обличчі -->
             <a-entity id="mask-entity"
                      position="0 0.15 0.05"
                      scale="0.2 0.2 0.2"
                      geometry="primitive: plane"
-                     material="src: #mask1; transparent: true; opacity: 1.0"
-                     rotation="0 0 0">
+                     material="src: #mask1; transparent: true; opacity: 1.0">
             </a-entity>
-           
         </a-marker>
-       
+
         <!-- Камера -->
         <a-entity camera></a-entity>
-       
-        <!-- Текстури для масок -->
+
+        <!-- Ассети (PNG файли масок) -->
         <a-assets>
             <img id="mask1" src="masks/mask1.png">
             <img id="mask2" src="masks/mask2.png">
@@ -204,231 +164,36 @@
             <img id="mask4" src="masks/mask4.png">
             <img id="mask5" src="masks/mask5.png">
         </a-assets>
-       
-        <!-- Додаткова анімація (опційно) -->
-        <a-entity id="effects" position="0 0.3 0">
-            <a-circle id="glowEffect" radius="0.3" color="#4CAF50" opacity="0.3"
-                     position="0 0 -0.1" visible="false"></a-circle>
-        </a-entity>
     </a-scene>
-   
+
     <script>
-        // Конфігурація гри
-        const config = {
-            masks: ['mask1', 'mask2', 'mask3', 'mask4', 'mask5'],
-            slotCount: 3, // Кількість слотів
-            spinSpeed: 100, // Швидкість прокрутки (мс)
-            spinDuration: 2000, // Базова тривалість спіну (мс)
-            maxSpins: 20 // Максимальна кількість обертів
-        };
-       
-        // Змінні гри
+        // Маски (PNG файли)
+        const masks = ['mask1', 'mask2', 'mask3', 'mask4', 'mask5'];
+        
+        // Стан гри
         let gameState = {
             isSpinning: false,
             currentMask: 'mask1',
             spinInterval: null,
-            spinStartTime: 0,
-            spins: 0,
-            finalMask: null
+            finalMask: null,
+            slotIntervals: []
         };
-       
-        // Оновлення таймера
-        function updateTimer() {
-            if (gameState.isSpinning) {
-                const elapsed = (Date.now() - gameState.spinStartTime) / 1000;
-                document.getElementById('currentTime').textContent = elapsed.toFixed(1);
-                requestAnimationFrame(updateTimer);
-            }
-        }
-       
-        // Запуск гри
-        function startGame() {
-            if (gameState.isSpinning) return;
-           
-            gameState.isSpinning = true;
-            gameState.spinStartTime = Date.now();
-            gameState.spins = 0;
-            gameState.finalMask = null;
-           
-            // Активуємо кнопки
-            document.getElementById('startBtn').disabled = true;
-            document.getElementById('stopBtn').disabled = false;
-           
-            // Запускаємо таймер
-            updateTimer();
-           
-            // Запускаємо анімацію слотів
-            startSlotAnimation();
-           
-            // Запускаємо зміну масок
-            gameState.spinInterval = setInterval(changeMask, config.spinSpeed);
-           
-            // Анімація ефектів
-            document.getElementById('glowEffect').setAttribute('visible', 'true');
-           
-            console.log('Гра розпочата!');
-        }
-       
-        // Зупинка гри
-        function stopGame() {
-            if (!gameState.isSpinning) return;
-           
-            gameState.isSpinning = false;
-            clearInterval(gameState.spinInterval);
-           
-            // Випадково обираємо фінальну маску
-            const randomMask = config.masks[Math.floor(Math.random() * config.masks.length)];
-            gameState.finalMask = randomMask;
-           
-            // Встановлюємо фінальну маску
-            setMask(randomMask);
-           
-            // Зупиняємо слоти
-            stopSlotAnimation(randomMask);
-           
-            // Деактивуємо кнопки
-            document.getElementById('startBtn').disabled = false;
-            document.getElementById('stopBtn').disabled = true;
-           
-            // Показуємо результат
-            showResult(randomMask);
-           
-            // Вимикаємо ефекти
-            document.getElementById('glowEffect').setAttribute('visible', 'false');
-           
-            console.log('Гра зупинена. Вибрана маска:', randomMask);
-        }
-       
-        // Зміна маски
-        function changeMask() {
-            if (!gameState.isSpinning) return;
-           
-            // Випадково обираємо маску
-            const randomMask = config.masks[Math.floor(Math.random() * config.masks.length)];
-            gameState.currentMask = randomMask;
-           
-            // Встановлюємо маску
-            setMask(randomMask);
-           
-            // Оновлюємо слоти
-            updateSlots(randomMask);
-           
-            gameState.spins++;
-           
-            // Автоматична зупинка після максимальної кількості спінів
-            if (gameState.spins >= config.maxSpins) {
-                stopGame();
-            }
-        }
-       
-        // Встановлення маски на обличчя
-        function setMask(maskId) {
-            const maskEntity = document.getElementById('mask-entity');
-            maskEntity.setAttribute('material', 'src', '#' + maskId);
-        }
-       
-        // Показ результату
-        function showResult(maskId) {
-            const resultPanel = document.getElementById('resultPanel');
-            const resultMask = document.getElementById('resultMask');
-           
-            // Текст результату
-            const maskNames = {
-                'mask1': '🔥 ВОГНЯНА МАСКА 🔥',
-                'mask2': '❄️ КРИЖАНА МАСКА ❄️',
-                'mask3': '🌿 ЛІСОВА МАСКА 🌿',
-                'mask4': '⭐ ЗІРКОВА МАСКА ⭐',
-                'mask5': '🌙 МІСЯЧНА МАСКА 🌙'
-            };
-           
-            resultMask.textContent = maskNames[maskId] || '🎭 ТАЄМНИЧА МАСКА 🎭';
-            resultPanel.style.display = 'block';
-           
-            // Анімація
-            resultPanel.style.animation = 'none';
-            setTimeout(() => {
-                resultPanel.style.animation = 'popIn 0.5s';
-            }, 10);
-        }
-       
-        // Закриття результату
-        function closeResult() {
-            document.getElementById('resultPanel').style.display = 'none';
-        }
-       
-        // Анімація слотів
-        function startSlotAnimation() {
-            const slots = ['slot1', 'slot2', 'slot3'];
-           
-            slots.forEach((slotId, index) => {
-                const slot = document.getElementById(slotId);
-                let counter = 0;
-               
-                const slotInterval = setInterval(() => {
-                    const randomMask = config.masks[Math.floor(Math.random() * config.masks.length)];
-                    const maskImg = document.getElementById(randomMask);
-                    if (maskImg) {
-                        slot.src = maskImg.src;
-                    }
-                    counter++;
-                   
-                    // Зберігаємо інтервал для зупинки
-                    slot.dataset.intervalId = slotInterval;
-                }, 100 + (index * 50)); // Різна швидкість для кожного слота
-            });
-        }
-       
-        // Зупинка анімації слотів
-        function stopSlotAnimation(finalMask) {
-            const slots = ['slot1', 'slot2', 'slot3'];
-           
-            // Отримуємо зображення фінальної маски
-            const finalMaskImg = document.getElementById(finalMask);
-           
-            // Зупиняємо кожен слот з затримкою для ефекту
-            slots.forEach((slotId, index) => {
-                setTimeout(() => {
-                    const slot = document.getElementById(slotId);
-                   
-                    // Зупиняємо інтервал
-                    if (slot.dataset.intervalId) {
-                        clearInterval(parseInt(slot.dataset.intervalId));
-                    }
-                   
-                    // Встановлюємо фінальне зображення
-                    if (finalMaskImg) {
-                        slot.src = finalMaskImg.src;
-                    }
-                }, index * 300); // Затримка між зупинкою слотів
-            });
-        }
-       
-        // Оновлення слотів
-        function updateSlots(maskId) {
-            const maskImg = document.getElementById(maskId);
-            if (!maskImg) return;
-           
-            // Оновлюємо перший слот (інші оновлюються в анімації)
-            const slot1 = document.getElementById('slot1');
-            slot1.src = maskImg.src;
-        }
-       
-        // Ініціалізація при завантаженні
+
+        // Початкова настройка
         window.addEventListener('DOMContentLoaded', () => {
-            // Встановлюємо початкову маску
+            // Встановлюємо першу маску
             setMask('mask1');
-           
-            // Завантажуємо зображення в слоти
-            const maskImg = document.getElementById('mask1');
-            const slots = ['slot1', 'slot2', 'slot3'];
-            slots.forEach(slotId => {
-                const slot = document.getElementById(slotId);
-                slot.src = maskImg.src;
+            
+            // Налаштовуємо слоти
+            const defaultImg = document.getElementById('mask1').src;
+            ['slot1', 'slot2', 'slot3'].forEach(slotId => {
+                document.getElementById(slotId).src = defaultImg;
             });
-           
-            // Обробка подій клавіатури
+            
+            // Налаштовуємо клавіатуру
             document.addEventListener('keydown', (e) => {
                 if (e.code === 'Space') {
+                    e.preventDefault();
                     if (gameState.isSpinning) {
                         stopGame();
                     } else {
@@ -436,31 +201,113 @@
                     }
                 }
             });
-           
-            // Інформація про керування
-            console.log('Гра готова! Натисніть START або пробіл для початку.');
         });
-       
-        // Стилі для анімацій
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes popIn {
-                0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-                70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-                100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            }
-           
-            @keyframes pulse {
-                0% { opacity: 0.3; }
-                50% { opacity: 0.7; }
-                100% { opacity: 0.3; }
-            }
-           
-            #glowEffect {
-                animation: pulse 1s infinite;
-            }
-        `;
-        document.head.appendChild(style);
+
+        // Початок гри
+        function startGame() {
+            if (gameState.isSpinning) return;
+            
+            gameState.isSpinning = true;
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            
+            // Запускаємо зміну масок
+            gameState.spinInterval = setInterval(changeMask, 100);
+            
+            // Запускаємо слоти
+            startSlots();
+        }
+
+        // Зупинка гри
+        function stopGame() {
+            if (!gameState.isSpinning) return;
+            
+            gameState.isSpinning = false;
+            clearInterval(gameState.spinInterval);
+            
+            // Обираємо фінальну маску
+            const randomMask = masks[Math.floor(Math.random() * masks.length)];
+            gameState.finalMask = randomMask;
+            
+            // Встановлюємо маску
+            setMask(randomMask);
+            
+            // Зупиняємо слоти
+            stopSlots(randomMask);
+            
+            // Кнопки
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            
+            // Показуємо результат
+            showResult(randomMask);
+        }
+
+        // Зміна маски
+        function changeMask() {
+            if (!gameState.isSpinning) return;
+            
+            const randomMask = masks[Math.floor(Math.random() * masks.length)];
+            gameState.currentMask = randomMask;
+            setMask(randomMask);
+        }
+
+        // Встановлення маски на обличчя
+        function setMask(maskId) {
+            const maskEntity = document.getElementById('mask-entity');
+            maskEntity.setAttribute('material', 'src', '#' + maskId);
+        }
+
+        // Запуск слотів
+        function startSlots() {
+            // Очищаємо попередні інтервали
+            gameState.slotIntervals.forEach(clearInterval);
+            gameState.slotIntervals = [];
+            
+            // Запускаємо нові інтервали
+            ['slot1', 'slot2', 'slot3'].forEach((slotId, index) => {
+                const interval = setInterval(() => {
+                    const randomMask = masks[Math.floor(Math.random() * masks.length)];
+                    const maskImg = document.getElementById(randomMask);
+                    document.getElementById(slotId).src = maskImg.src;
+                }, 100 + (index * 50));
+                
+                gameState.slotIntervals.push(interval);
+            });
+        }
+
+        // Зупинка слотів
+        function stopSlots(finalMask) {
+            // Зупиняємо всі інтервали
+            gameState.slotIntervals.forEach(clearInterval);
+            gameState.slotIntervals = [];
+            
+            // Встановлюємо фінальну маску в слоти
+            const finalImg = document.getElementById(finalMask).src;
+            ['slot1', 'slot2', 'slot3'].forEach((slotId, index) => {
+                setTimeout(() => {
+                    document.getElementById(slotId).src = finalImg;
+                }, index * 200);
+            });
+        }
+
+        // Показ результату
+        function showResult(maskId) {
+            const resultPanel = document.getElementById('resultPanel');
+            const resultImg = document.getElementById('resultImg');
+            
+            // Встановлюємо зображення результату
+            const maskImg = document.getElementById(maskId);
+            resultImg.src = maskImg.src;
+            
+            // Показуємо панель
+            resultPanel.style.display = 'block';
+        }
+
+        // Закриття результату
+        function closeResult() {
+            document.getElementById('resultPanel').style.display = 'none';
+        }
     </script>
 </body>
 </html>
