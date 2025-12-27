@@ -2,8 +2,8 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AR </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>AR Язик-Слоти</title>
   <style>
     * {
       margin: 0;
@@ -16,6 +16,7 @@
       background: #000;
       color: white;
       font-family: 'Arial', sans-serif;
+      touch-action: none;
     }
     #video {
       position: fixed;
@@ -48,12 +49,14 @@
       padding: 15px 30px;
       border-radius: 15px;
       pointer-events: auto;
+      transition: opacity 0.3s;
     }
     #slots {
       display: none;
       gap: 20px;
       justify-content: center;
       margin-top: 30px;
+      pointer-events: none;
     }
     .slot {
       width: 100px;
@@ -65,6 +68,7 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      transition: transform 0.1s;
     }
     .slot img {
       width: 90%;
@@ -77,7 +81,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.95);
       display: none;
       flex-direction: column;
       align-items: center;
@@ -86,13 +90,15 @@
       pointer-events: auto;
     }
     #result img {
-      width: 250px;
-      height: 250px;
+      width: 90vw;
+      max-width: 300px;
+      height: auto;
       object-fit: contain;
       background: white;
       padding: 20px;
       border-radius: 20px;
       border: 4px solid gold;
+      box-shadow: 0 0 30px rgba(212, 175, 55, 0.7);
     }
     #playAgain {
       margin-top: 30px;
@@ -103,6 +109,7 @@
       border: none;
       border-radius: 30px;
       cursor: pointer;
+      display: none;
     }
   </style>
 </head>
@@ -117,10 +124,10 @@
     </div>
   </div>
   <div id="result">
-    <h2>ТВІЙ ВИБІР</h2>
+    <h2 style="color: gold; font-size: 32px; margin-bottom: 20px;">ТВІЙ ВИБІР</h2>
     <img id="resultImg" src="" />
-    <button id="playAgain">ГРАТИ ЩЕ</button>
   </div>
+  <button id="playAgain">ГРАТИ ЩЕ</button>
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
@@ -136,13 +143,12 @@
     const masks = ["mask1", "mask2", "mask3", "mask4", "mask5"];
     let tongueDetected = false;
     let gameActive = false;
-    let tongueHiddenTimer = null;
+    let spinning = false;
+    let spinInterval = null;
 
     // Ініціалізуємо FaceMesh
     const faceMesh = new FaceMesh({
-      locateFile: (file) => {
-        return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-      }
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
     });
 
     faceMesh.setOptions({
@@ -154,97 +160,100 @@
 
     faceMesh.onResults(onFaceMeshResults);
 
-    // Доступ до камери (фронтальна!)
     const camera = new Camera(video, {
-      onFrame: async () => {
-        await faceMesh.send({ image: video });
-      },
+      onFrame: async () => { await faceMesh.send({ image: video }); },
       width: 640,
       height: 480,
-      facingMode: "user" // ← це фронтальна камера!
+      facingMode: "user"
     });
     camera.start();
 
-    // Обробка результатів FaceMesh
     function onFaceMeshResults(results) {
       if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
-        tongueDetected = false;
-        resetTongueState();
+        if (tongueDetected) {
+          tongueDetected = false;
+          startHideSequence();
+        }
         return;
       }
 
       const landmarks = results.multiFaceLandmarks[0];
-
-      // Язик: точки 20–25 (внутрішній язик) + 270–275 (зовнішній)
-      // Використовуємо Y-координати: якщо язик видимий — його Y менше, ніж у рота
-      const lipTop = landmarks[13].y;     // верхня губа
-      const lipBottom = landmarks[14].y;  // нижня губа
-      const tongueTip = landmarks[20].y;  // кінчик язика
+      const lipTop = landmarks[13].y;
+      const lipBottom = landmarks[14].y;
+      const tongueTip = landmarks[20].y;
 
       const mouthOpen = lipBottom - lipTop > 0.03;
-      const tongueVisible = mouthOpen && tongueTip < lipTop;
+      const tongueVisible = mouthOpen && tongueTip < lipTop - 0.01; // трохи строгіше
 
-      if (tongueVisible && !tongueDetected && !gameActive) {
+      if (tongueVisible && !tongueDetected) {
+        // Язик з'явився — починаємо гру
         tongueDetected = true;
+        if (resultPanel.style.display === "flex") {
+          // Приховуємо результат
+          resultPanel.style.display = "none";
+          instruction.style.opacity = "1";
+        }
         instruction.textContent = "ЗАХОВАЙ ЯЗИК!";
-        startSlots();
-        gameActive = true;
-      }
-
-      if (!tongueVisible && tongueDetected && gameActive) {
-        // Язик захований → фіксуємо затримку
-        if (tongueHiddenTimer) clearTimeout(tongueHiddenTimer);
-        tongueHiddenTimer = setTimeout(() => {
-          stopGame();
-        }, 800); // 0.8 секунди після зникнення
-      } else if (tongueVisible && tongueHiddenTimer) {
-        clearTimeout(tongueHiddenTimer); // скасовуємо, якщо язик знову видимий
+        instruction.style.opacity = "1";
+        startSpinning();
+      } else if (!tongueVisible && tongueDetected) {
+        // Язик зник — починаємо затримку
+        tongueDetected = false;
+        startHideSequence();
       }
     }
 
-    function startSlots() {
+    function startSpinning() {
+      if (spinning) return;
+      spinning = true;
+      gameActive = true;
       slotsContainer.style.display = "flex";
-      // Анімація обертання
-      const slots = [s1, s2, s3];
-      const interval = setInterval(() => {
+
+      if (spinInterval) clearInterval(spinInterval);
+      spinInterval = setInterval(() => {
+        const slots = [s1, s2, s3];
         slots.forEach(slot => {
-          const mask = masks[Math.floor(Math.random() * masks.length)];
-          slot.src = `masks/${mask}.png`;
+          const randomMask = masks[Math.floor(Math.random() * masks.length)];
+          slot.src = `masks/${randomMask}.png`;
         });
-      }, 100);
-
-      // Зупиняємо через 2 секунди
-      setTimeout(() => {
-        clearInterval(interval);
-        const finalMask = masks[Math.floor(Math.random() * masks.length)];
-        slots.forEach(slot => slot.src = `masks/${finalMask}.png`);
-        // Чекаємо, доки користувач заховає язик
-      }, 2000);
+      }, 80);
     }
 
-    function stopGame() {
-      gameActive = false;
-      tongueDetected = false;
-      const finalImg = document.querySelector("#slots .slot img").src;
-      resultImg.src = finalImg;
-      resultPanel.style.display = "flex";
-    }
-
-    function resetTongueState() {
-      if (!gameActive) {
-        instruction.textContent = "ПОКАЖИ ЯЗИК!";
-        slotsContainer.style.display = "none";
+    function startHideSequence() {
+      // Зупиняємо обертання відразу
+      if (spinInterval) {
+        clearInterval(spinInterval);
+        spinInterval = null;
       }
+      spinning = false;
+
+      // Через коротку затримку — показуємо результат
+      setTimeout(() => {
+        const slots = [s1, s2, s3];
+        const randomSlot = slots[Math.floor(Math.random() * slots.length)];
+        const finalSrc = randomSlot.src;
+
+        // Приховуємо слоти
+        slotsContainer.style.display = "none";
+        instruction.style.opacity = "0";
+
+        // Показуємо результат
+        resultImg.src = finalSrc;
+        resultPanel.style.display = "flex";
+      }, 300);
     }
 
     playAgainBtn.onclick = () => {
       resultPanel.style.display = "none";
       instruction.textContent = "ПОКАЖИ ЯЗИК!";
-      slotsContainer.style.display = "none";
+      instruction.style.opacity = "1";
       gameActive = false;
       tongueDetected = false;
+      if (spinInterval) {
+        clearInterval(spinInterval);
+        spinInterval = null;
+      }
     };
   </script>
 </body>
 </html>
-
