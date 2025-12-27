@@ -124,28 +124,26 @@
             backdrop-filter: blur(10px);
         }
 
+        /* БІЛИЙ ФОН ДЛЯ СЛОТІВ */
         .slot {
             width: 120px;
             height: 160px;
-            background: linear-gradient(180deg, 
-                #2a2a2a 0%,
-                #1a1a1a 50%,
-                #0a0a0a 100%);
+            background: #ffffff !important; /* Білий фон для чіткості тексту */
             border-radius: 15px;
             overflow: hidden;
             position: relative;
-            border: 3px solid #333;
+            border: 3px solid #ffd700;
             box-shadow: 
-                inset 0 0 30px rgba(0, 0, 0, 0.9),
-                0 10px 30px rgba(0, 0, 0, 0.7);
+                inset 0 0 20px rgba(0, 0, 0, 0.2),
+                0 10px 30px rgba(255, 215, 0, 0.4);
             transition: all 0.3s ease;
         }
 
         .slot.active {
-            border-color: #ffd700;
+            border-color: #2196F3;
             box-shadow: 
-                inset 0 0 30px rgba(255, 215, 0, 0.3),
-                0 0 30px rgba(255, 215, 0, 0.5);
+                inset 0 0 30px rgba(33, 150, 243, 0.3),
+                0 0 40px rgba(33, 150, 243, 0.6);
         }
 
         .slot::before {
@@ -157,9 +155,10 @@
             bottom: 0;
             background: linear-gradient(45deg, 
                 transparent 30%, 
-                rgba(255, 215, 0, 0.1) 50%, 
+                rgba(255, 255, 255, 0.3) 50%, 
                 transparent 70%);
             animation: slotShine 3s infinite linear;
+            z-index: 1;
         }
 
         @keyframes slotShine {
@@ -171,10 +170,11 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            padding: 15px;
-            filter: brightness(1.3);
+            padding: 20px;
             position: relative;
             z-index: 2;
+            /* Покращуємо видимість тексту на білому фоні */
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
         }
 
         /* Сканер язика */
@@ -224,14 +224,14 @@
             100% { transform: scale(0.8); opacity: 0.7; }
         }
 
-        /* Результат */
+        /* Результат - ПРОЗОРИЙ ФОН */
         .result-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.85); /* Напівпрозорий чорний */
             z-index: 2000;
             display: none;
             align-items: center;
@@ -239,57 +239,53 @@
         }
 
         .result-card {
-            background: linear-gradient(145deg, 
-                rgba(30, 30, 30, 0.95),
-                rgba(50, 50, 50, 0.95));
-            border: 5px solid;
-            border-image: linear-gradient(45deg, 
-                #4CAF50, 
-                #8BC34A, 
-                #4CAF50) 1;
+            background: rgba(255, 255, 255, 0.95) !important; /* Білий напівпрозорий фон */
+            border: 5px solid #ffd700;
             border-radius: 25px;
             padding: 40px;
             max-width: 500px;
             text-align: center;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
         }
 
         .result-title {
             font-size: 36px;
             font-weight: 900;
-            background: linear-gradient(45deg, 
-                #4CAF50, 
-                #8BC34A);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #000 !important; /* Чорний текст */
             margin-bottom: 30px;
             text-transform: uppercase;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
 
+        /* БІЛИЙ ФОН ДЛЯ РЕЗУЛЬТАТУ */
         .result-mask {
-            width: 250px;
-            height: 250px;
+            width: 300px;
+            height: 300px;
             margin: 20px auto;
-            background: rgba(255, 255, 255, 0.05);
+            background: #ffffff !important; /* Білий фон для чіткості */
             border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 3px solid rgba(76, 175, 80, 0.3);
+            border: 3px solid #ffd700;
+            box-shadow: 
+                inset 0 0 20px rgba(0, 0, 0, 0.1),
+                0 10px 40px rgba(255, 215, 0, 0.5);
         }
 
         .result-mask img {
             width: 90%;
             height: 90%;
             object-fit: contain;
-            filter: drop-shadow(0 0 20px rgba(76, 175, 80, 0.5));
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
         }
 
         .result-btn {
             background: linear-gradient(45deg, 
-                #4CAF50, 
-                #388E3C);
+                #2196F3, 
+                #1976D2);
             color: white;
             border: none;
             padding: 15px 40px;
@@ -301,11 +297,12 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(33, 150, 243, 0.5);
         }
 
         .result-btn:hover {
             transform: scale(1.05);
-            box-shadow: 0 0 30px rgba(76, 175, 80, 0.7);
+            box-shadow: 0 10px 30px rgba(33, 150, 243, 0.7);
         }
 
         /* Стрічки виграшу */
@@ -315,15 +312,16 @@
             left: 50%;
             transform: translateX(-50%);
             background: linear-gradient(45deg, 
-                #ffd700, 
-                #ffed4e, 
-                #ffd700);
-            color: #000;
+                #2196F3, 
+                #1976D2,
+                #2196F3);
+            color: white;
             padding: 10px 40px;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 3px;
             clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.5);
         }
 
         /* Кнопки */
@@ -383,6 +381,47 @@
             border-radius: 50%;
             box-shadow: 0 0 5px white;
         }
+
+        /* Індикатор трекінгу язика */
+        .tongue-indicator {
+            position: fixed;
+            bottom: 150px;
+            right: 30px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, 
+                rgba(255, 107, 107, 0.3) 0%,
+                transparent 70%);
+            border: 3px solid rgba(255, 107, 107, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .tongue-indicator.detected {
+            background: radial-gradient(circle, 
+                rgba(76, 175, 80, 0.4) 0%,
+                transparent 70%);
+            border-color: #4CAF50;
+            animation: indicatorPulse 0.5s ease-out;
+        }
+
+        @keyframes indicatorPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .indicator-text {
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            font-size: 14px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
 <body>
@@ -399,6 +438,13 @@
             <div class="tongue-status" id="tongueStatus">ШОКАЙ ЯЗИК!</div>
             <div class="tongue-pulse" id="tonguePulse"></div>
             <div class="tongue-instruction">Покажи язик щоб запустити слоти</div>
+        </div>
+    </div>
+
+    <!-- Індикатор трекінгу язика -->
+    <div class="tongue-indicator" id="tongueIndicator">
+        <div class="indicator-text">
+            <span id="indicatorText">ЯЗИК<br>ВИЯВЛЕНО</span>
         </div>
     </div>
 
@@ -436,8 +482,8 @@
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; maxDetectionRate: 60;" 
              renderer="logarithmicDepthBuffer: true; precision: medium;">
         
-        <!-- Маркер обличчя з трекінгом язика -->
-        <a-marker type="face" id="face-marker" face-tracking>
+        <!-- Маркер обличчя -->
+        <a-marker type="face" id="face-marker" face-tracking="enabled: true; smooth: true;">
             <!-- Основа для маски -->
             <a-entity id="mask-base"
                      position="0 0.2 0.05"
@@ -450,18 +496,33 @@
                 </a-entity>
             </a-entity>
 
-            <!-- Точка для язика -->
-            <a-entity id="tongue-marker"
-                     position="0 -0.05 0.08"
-                     visible="false">
-                <a-sphere radius="0.01" 
+            <!-- Точки для рота -->
+            <a-entity id="mouth-container">
+                <!-- Центр рота -->
+                <a-sphere id="mouth-center"
+                         position="0 -0.02 0.07"
+                         radius="0.01"
                          color="#FF6B6B"
-                         opacity="0.7"
-                         animation__pulse="property: scale; 
-                                          to: 2 2 2; 
-                                          dir: alternate; 
-                                          dur: 1000; 
-                                          loop: true">
+                         opacity="0.5"
+                         visible="true">
+                </a-sphere>
+                
+                <!-- Ліва точка рота -->
+                <a-sphere id="mouth-left"
+                         position="-0.03 -0.02 0.07"
+                         radius="0.01"
+                         color="#FF6B6B"
+                         opacity="0.5"
+                         visible="true">
+                </a-sphere>
+                
+                <!-- Права точка рота -->
+                <a-sphere id="mouth-right"
+                         position="0.03 -0.02 0.07"
+                         radius="0.01"
+                         color="#FF6B6B"
+                         opacity="0.5"
+                         visible="true">
                 </a-sphere>
             </a-entity>
         </a-marker>
@@ -493,10 +554,14 @@
             isSpinning: false,
             currentMask: 'mask1',
             tongueDetected: false,
-            tongueInterval: null,
+            mouthOpen: false,
+            mouthInterval: null,
             slotIntervals: [],
-            lastTonguePosition: { x: 0, y: 0, z: 0 },
-            tongueStickOut: false
+            mouthPositions: {
+                center: { x: 0, y: 0, z: 0 },
+                left: { x: 0, y: 0, z: 0 },
+                right: { x: 0, y: 0, z: 0 }
+            }
         };
 
         // Ініціалізація
@@ -510,81 +575,111 @@
                 document.getElementById(slotId).querySelector('img').src = defaultImg;
             });
             
-            // Запускаємо трекінг язика
-            startTongueTracking();
+            // Запускаємо трекінг рота
+            startMouthTracking();
             
             // Додаємо частинки
             createParticles();
+            
+            console.log('Гра завантажена. Використовуйте язик для запуску!');
         });
 
-        // Трекінг язика
-        function startTongueTracking() {
-            gameState.tongueInterval = setInterval(() => {
-                const tongueMarker = document.getElementById('tongue-marker');
-                if (tongueMarker) {
-                    const position = tongueMarker.getAttribute('position');
-                    const currentPos = { 
-                        x: position.x, 
-                        y: position.y, 
-                        z: position.z 
+        // Трекінг рота (імітація трекінгу язика)
+        function startMouthTracking() {
+            gameState.mouthInterval = setInterval(() => {
+                const mouthCenter = document.getElementById('mouth-center');
+                const mouthLeft = document.getElementById('mouth-left');
+                const mouthRight = document.getElementById('mouth-right');
+                
+                if (mouthCenter && mouthLeft && mouthRight) {
+                    // Отримуємо позиції точок рота
+                    const centerPos = mouthCenter.getAttribute('position');
+                    const leftPos = mouthLeft.getAttribute('position');
+                    const rightPos = mouthRight.getAttribute('position');
+                    
+                    // Зберігаємо позиції
+                    gameState.mouthPositions = {
+                        center: { x: centerPos.x, y: centerPos.y, z: centerPos.z },
+                        left: { x: leftPos.x, y: leftPos.y, z: leftPos.z },
+                        right: { x: rightPos.x, y: rightPos.y, z: rightPos.z }
                     };
                     
-                    // Відстань між поточною і попередньою позицією
-                    const distance = Math.sqrt(
-                        Math.pow(currentPos.x - gameState.lastTonguePosition.x, 2) +
-                        Math.pow(currentPos.y - gameState.lastTonguePosition.y, 2) +
-                        Math.pow(currentPos.z - gameState.lastTonguePosition.z, 2)
-                    );
+                    // Обчислюємо відстань між кутками рота
+                    const mouthWidth = Math.abs(leftPos.x - rightPos.x);
+                    const mouthHeight = Math.abs(centerPos.z - ((leftPos.z + rightPos.z) / 2));
                     
-                    // Язик вважаємо показаним, якщо він рухається вперед (z збільшується)
-                    const tongueOut = currentPos.z > 0.05 && distance > 0.01;
+                    // Визначаємо, чи відкритий рот (імітація показу язика)
+                    const isMouthOpen = mouthWidth > 0.05 || mouthHeight > 0.02 || centerPos.z > 0.08;
                     
-                    if (tongueOut && !gameState.tongueStickOut) {
-                        // Язик тільки що показали
-                        gameState.tongueStickOut = true;
-                        tongueDetected();
-                    } else if (!tongueOut && gameState.tongueStickOut) {
-                        // Язик тільки що сховали
-                        gameState.tongueStickOut = false;
+                    // Якщо рот відкритий, вважаємо що язик показано
+                    if (isMouthOpen && !gameState.mouthOpen) {
+                        gameState.mouthOpen = true;
+                        mouthDetected();
+                    } else if (!isMouthOpen && gameState.mouthOpen) {
+                        gameState.mouthOpen = false;
                     }
                     
-                    gameState.lastTonguePosition = currentPos;
-                    
-                    // Оновлюємо статус
-                    updateTongueStatus(tongueOut);
+                    // Оновлюємо індикатор
+                    updateMouthIndicator(isMouthOpen);
                 }
-            }, 100);
+            }, 150); // Перевіряємо кожні 150мс
         }
 
-        // Оновлення статусу язика
-        function updateTongueStatus(isOut) {
+        // Оновлення індикатора
+        function updateMouthIndicator(isOpen) {
+            const indicator = document.getElementById('tongueIndicator');
+            const indicatorText = document.getElementById('indicatorText');
             const statusElement = document.getElementById('tongueStatus');
             const pulseElement = document.getElementById('tonguePulse');
             
-            if (isOut) {
+            if (isOpen) {
+                indicator.classList.add('detected');
+                indicatorText.innerHTML = 'ЯЗИК<br>ВИЯВЛЕНО';
+                indicatorText.style.color = '#4CAF50';
                 statusElement.textContent = 'ЯЗИК ВИЯВЛЕНО!';
                 statusElement.style.color = '#4CAF50';
                 pulseElement.style.background = 'radial-gradient(circle, rgba(76, 175, 80, 0.8) 0%, rgba(76, 175, 80, 0.4) 50%, transparent 70%)';
+                
+                // Анімація для точок рота
+                ['mouth-center', 'mouth-left', 'mouth-right'].forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.setAttribute('color', '#4CAF50');
+                        element.setAttribute('opacity', '0.8');
+                    }
+                });
             } else {
+                indicator.classList.remove('detected');
+                indicatorText.innerHTML = 'ЯЗИК<br>ВИЯВЛЕНО';
+                indicatorText.style.color = '#FF6B6B';
                 statusElement.textContent = 'ШОКАЙ ЯЗИК!';
                 statusElement.style.color = '#FF6B6B';
                 pulseElement.style.background = 'radial-gradient(circle, rgba(255, 107, 107, 0.8) 0%, rgba(255, 107, 107, 0.4) 50%, transparent 70%)';
+                
+                // Анімація для точок рота
+                ['mouth-center', 'mouth-left', 'mouth-right'].forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.setAttribute('color', '#FF6B6B');
+                        element.setAttribute('opacity', '0.5');
+                    }
+                });
             }
         }
 
         // Виявлення язика
-        function tongueDetected() {
+        function mouthDetected() {
             if (gameState.isSpinning) return;
             
             // Ефект виявлення
             createSparkleEffect();
             
-            // Запускаємо гру через 500мс
+            // Запускаємо гру через 300мс
             setTimeout(() => {
                 if (!gameState.isSpinning) {
                     startGame();
                 }
-            }, 500);
+            }, 300);
         }
 
         // Ручний запуск
