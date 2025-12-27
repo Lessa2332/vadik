@@ -2,1349 +2,465 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#1a1a2e">
-    <meta name="format-detection" content="telephone=no">
-    <title>🎂 З Днем Народження! </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebAR Гра</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-        
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            position: fixed;
-            background: #000;
-        }
-        
         body {
             margin: 0;
+            padding: 0;
             overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: Arial, sans-serif;
+            background: #000;
+        }
+       
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 1000;
+        }
+       
+        .game-info {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
             color: white;
-            height: 100vh;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+            z-index: 1000;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-bottom: 2px solid #4CAF50;
         }
-        
-        /* Безпечна зона для iPhone X+ */
-        @supports (padding: max(0px)) {
-            body {
-                padding-left: env(safe-area-inset-left);
-                padding-right: env(safe-area-inset-right);
-                padding-top: env(safe-area-inset-top);
-                padding-bottom: env(safe-area-inset-bottom);
-            }
+       
+        .button {
+            background: linear-gradient(45deg, #4CAF50, #2E7D32);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            min-width: 150px;
         }
-        
-        /* Відео фон */
-        #video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            transform: scaleX(-1);
-            z-index: 1;
-            -webkit-transform: scaleX(-1);
+       
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
         }
-        
-        /* Canvas для емоджі */
-        #canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-            pointer-events: none;
+       
+        .button:active {
+            transform: translateY(1px);
         }
-        
-        /* Головна кнопка */
-        #startButton {
-            position: fixed;
+       
+        .stop-btn {
+            background: linear-gradient(45deg, #f44336, #c62828);
+        }
+       
+        .counter {
+            font-size: 24px;
+            color: #4CAF50;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+       
+        .result {
+            position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            padding: min(5vh, 25px) min(10vw, 50px);
-            font-size: clamp(20px, 5vw, 28px);
-            background: linear-gradient(135deg, #ff6b6b, #ff4757);
-            border: none;
-            border-radius: max(2vw, 15px);
-            cursor: pointer;
-            z-index: 100;
-            transition: all 0.3s ease;
+            background: rgba(0,0,0,0.9);
             color: white;
-            font-weight: bold;
-            box-shadow: 0 2vh 4vh rgba(255, 107, 107, 0.6),
-                        0 0 0 max(0.5vw, 4px) rgba(255, 107, 107, 0.3),
-                        0 0 0 max(1vw, 8px) rgba(255, 107, 107, 0.1);
-            animation: pulse-glow 2s infinite, bounce 3s infinite;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            width: min(90vw, 400px);
+            padding: 30px;
+            border-radius: 20px;
             text-align: center;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        
-        #startButton:hover, #startButton:active {
-            transform: translate(-50%, -50%) scale(1.05);
-            box-shadow: 0 3vh 5vh rgba(255, 107, 107, 0.8),
-                        0 0 0 max(0.7vw, 6px) rgba(255, 107, 107, 0.4),
-                        0 0 0 max(1.5vw, 12px) rgba(255, 107, 107, 0.2);
-        }
-        
-        /* Кнопка звуку */
-        #soundBtn {
-            position: fixed;
-            top: max(env(safe-area-inset-top, 20px), 20px);
-            left: max(env(safe-area-inset-left, 20px), 20px);
-            width: min(12vw, 70px);
-            height: min(12vw, 70px);
-            min-width: 55px;
-            min-height: 55px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #4ECDC4, #44A08D);
-            border: max(0.4vw, 3px) solid white;
-            color: white;
-            font-size: clamp(22px, 5vw, 30px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 100;
-            box-shadow: 0 2vh 3vh rgba(78, 205, 196, 0.7),
-                        0 0 0 max(0.4vw, 3px) rgba(255, 255, 255, 0.5);
-            animation: sound-pulse 1.5s infinite;
-            font-weight: bold;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        
-        #soundBtn:hover, #soundBtn:active {
-            transform: scale(1.1);
-            box-shadow: 0 3vh 4vh rgba(78, 205, 196, 0.9),
-                        0 0 0 max(0.6vw, 4px) rgba(255, 255, 255, 0.7);
-        }
-        
-        #soundBtn.muted {
-            background: linear-gradient(135deg, #FF6B6B, #FF4757);
-            box-shadow: 0 2vh 3vh rgba(255, 107, 107, 0.7),
-                        0 0 0 max(0.4vw, 3px) rgba(255, 255, 255, 0.5);
-        }
-        
-        #title {
-            position: fixed;
-            top: clamp(5%, env(safe-area-inset-top, 30px), 10%);
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-            font-size: clamp(20px, 5vw, 42px);
-            font-weight: bold;
-            text-shadow: 0 1vh 2vh rgba(0,0,0,0.9);
-            z-index: 10;
-            background: linear-gradient(135deg, rgba(255, 107, 107, 0.9), rgba(255, 183, 77, 0.9));
-            padding: clamp(15px, 3vw, 20px) clamp(20px, 5vw, 35px);
-            border-radius: max(2vw, 15px);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: max(0.4vw, 3px) solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 3vh 6vh rgba(0,0,0,0.5);
-            white-space: nowrap;
-            animation: title-float 4s infinite ease-in-out;
-            max-width: 95vw;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        #smileIndicator {
-            position: fixed;
-            bottom: max(12vh, 120px);
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, rgba(255, 107, 107, 0.9), rgba(255, 183, 77, 0.9));
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            color: white;
-            padding: clamp(10px, 2vw, 15px) clamp(15px, 4vw, 30px);
-            border-radius: max(3vw, 20px);
-            border: max(0.4vw, 3px) solid rgba(255, 255, 255, 0.8);
+            z-index: 2000;
             display: none;
-            align-items: center;
-            gap: clamp(10px, 3vw, 15px);
-            z-index: 10;
-            font-size: clamp(16px, 4vw, 20px);
-            font-weight: bold;
-            box-shadow: 0 2vh 4vh rgba(0,0,0,0.4);
-            animation: slide-up 0.5s ease;
-            width: min(90vw, 400px);
-            justify-content: center;
+            border: 3px solid #4CAF50;
         }
-        
-        .smile-icon {
-            font-size: clamp(24px, 6vw, 32px);
-            animation: bounce 1s infinite;
+       
+        .result h2 {
+            color: #4CAF50;
+            margin-bottom: 20px;
         }
-        
-        /* Дебаг-панель */
-        #debugPanel {
-            position: fixed;
-            top: max(100px, env(safe-area-inset-top, 30px));
-            right: max(10px, env(safe-area-inset-right, 10px));
-            background: rgba(0, 0, 0, 0.8);
+       
+        .result-mask {
+            font-size: 48px;
+            margin: 20px 0;
+        }
+       
+        .close-btn {
+            background: #f44336;
             color: white;
-            padding: min(2vw, 10px);
-            border-radius: max(1vw, 10px);
-            font-family: monospace;
-            font-size: clamp(10px, 2.5vw, 12px);
-            z-index: 1000;
-            display: block;
-            max-width: min(90vw, 300px);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
         }
-        
-        #loading {
-            position: fixed;
-            top: 0;
+       
+        .current-mask {
+            color: #FF9800;
+            font-weight: bold;
+        }
+       
+        .slot-machine {
+            position: absolute;
+            top: 70px;
             left: 0;
+            right: 0;
+            text-align: center;
+            color: white;
+            z-index: 1000;
+        }
+       
+        .slot {
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            margin: 0 10px;
+            border: 3px solid #4CAF50;
+            border-radius: 10px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.1);
+        }
+       
+        .slot img {
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            gap: min(5vh, 30px);
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-        }
-        
-        .loader {
-            width: min(20vw, 80px);
-            height: min(20vw, 80px);
-            border: max(0.6vw, 5px) solid rgba(255, 107, 107, 0.3);
-            border-top: max(0.6vw, 5px) solid #ff6b6b;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            box-shadow: 0 0 3vh rgba(255, 107, 107, 0.5);
-        }
-        
-        /* Емоджі анімації */
-        .emoji-float {
-            position: fixed;
-            font-size: clamp(40px, 10vw, 70px);
-            pointer-events: none;
-            z-index: 3;
-            animation: emoji-float 2s ease-out forwards;
-            text-shadow: 0 0 3vh rgba(255, 107, 107, 0.9);
-            filter: drop-shadow(0 0.5vh 1.5vh rgba(0,0,0,0.3));
-            -webkit-filter: drop-shadow(0 0.5vh 1.5vh rgba(0,0,0,0.3));
-        }
-        
-        /* Кнопка камери */
-        #cameraBtn {
-            position: fixed;
-            bottom: max(3vh, 30px);
-            right: max(2vw, 30px);
-            width: min(12vw, 60px);
-            height: min(12vw, 60px);
-            min-width: 50px;
-            min-height: 50px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: max(0.3vw, 2px) solid rgba(255, 255, 255, 0.5);
-            color: white;
-            font-size: clamp(20px, 4vw, 28px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10;
-            transition: all 0.3s ease;
-            box-shadow: 0 1vh 3vh rgba(0, 0, 0, 0.3);
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        
-        #cameraBtn:hover, #cameraBtn:active {
-            transform: scale(1.1);
-            background: rgba(255, 255, 255, 0.25);
-        }
-        
-        /* Повідомлення */
-        .message {
-            position: fixed;
-            top: 20%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.85);
-            color: white;
-            padding: clamp(12px, 3vw, 15px) clamp(20px, 5vw, 25px);
-            border-radius: max(2vw, 15px);
-            z-index: 1000;
-            font-weight: bold;
-            text-align: center;
-            max-width: min(90vw, 400px);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 2vh 4vh rgba(0,0,0,0.4);
-        }
-        
-        /* Анімації */
-        @keyframes pulse-glow {
-            0% { 
-                box-shadow: 0 2vh 4vh rgba(255, 107, 107, 0.6),
-                            0 0 0 max(0.5vw, 4px) rgba(255, 107, 107, 0.3),
-                            0 0 0 max(1vw, 8px) rgba(255, 107, 107, 0.1);
-            }
-            50% { 
-                box-shadow: 0 3vh 5vh rgba(255, 107, 107, 0.8),
-                            0 0 0 max(0.7vw, 6px) rgba(255, 107, 107, 0.4),
-                            0 0 0 max(1.5vw, 12px) rgba(255, 107, 107, 0.2);
-            }
-            100% { 
-                box-shadow: 0 2vh 4vh rgba(255, 107, 107, 0.6),
-                            0 0 0 max(0.5vw, 4px) rgba(255, 107, 107, 0.3),
-                            0 0 0 max(1vw, 8px) rgba(255, 107, 107, 0.1);
-            }
-        }
-        
-        @keyframes sound-pulse {
-            0%, 100% { 
-                transform: scale(1);
-                box-shadow: 0 2vh 3vh rgba(78, 205, 196, 0.7),
-                            0 0 0 max(0.4vw, 3px) rgba(255, 255, 255, 0.5);
-            }
-            50% { 
-                transform: scale(1.05);
-                box-shadow: 0 3vh 4vh rgba(78, 205, 196, 0.9),
-                            0 0 0 max(0.6vw, 4px) rgba(255, 255, 255, 0.7);
-            }
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-1vh); }
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        @keyframes emoji-float {
-            0% { transform: translateY(0) scale(0.5); opacity: 0; }
-            20% { transform: translateY(-4vh) scale(1.3); opacity: 1; }
-            80% { transform: translateY(-12vh) scale(1); opacity: 1; }
-            100% { transform: translateY(-18vh) scale(0.8); opacity: 0; }
-        }
-        
-        @keyframes title-float {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(-1vh); }
-        }
-        
-        @keyframes slide-up {
-            from { 
-                opacity: 0;
-                transform: translateX(-50%) translateY(3vh);
-            }
-            to { 
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-        }
-        
-        @keyframes fade-in-out {
-            0% { opacity: 0; transform: translateX(-50%) translateY(-2vh); }
-            20% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            80% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            100% { opacity: 0; transform: translateX(-50%) translateY(-2vh); }
-        }
-        
-        /* Адаптація для дуже маленьких екранів */
-        @media (max-width: 320px) {
-            #title {
-                font-size: 18px;
-                padding: 12px 18px;
-            }
-            
-            #startButton {
-                font-size: 18px;
-                padding: 15px 25px;
-            }
-            
-            #soundBtn {
-                width: 50px;
-                height: 50px;
-                font-size: 22px;
-            }
-        }
-        
-        /* Адаптація для високих екранів (iPhone X, 12, 13, 14) */
-        @media (min-height: 800px) {
-            #smileIndicator {
-                bottom: 15vh;
-            }
-            
-            #cameraBtn {
-                bottom: 4vh;
-            }
-        }
-        
-        /* Ландшафт режим */
-        @media (orientation: landscape) and (max-height: 500px) {
-            #title {
-                font-size: clamp(16px, 3vw, 24px);
-                padding: 10px 15px;
-                top: 5%;
-            }
-            
-            #startButton {
-                padding: 10px 20px;
-                font-size: 18px;
-            }
-            
-            #soundBtn {
-                width: 50px;
-                height: 50px;
-                font-size: 22px;
-            }
-            
-            #smileIndicator {
-                bottom: 8vh;
-                font-size: 14px;
-                padding: 8px 15px;
-            }
-            
-            .smile-icon {
-                font-size: 20px;
-            }
-        }
-        
-        /* Темна тема */
-        @media (prefers-color-scheme: dark) {
-            body {
-                background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
-            }
-            
-            #loading {
-                background: linear-gradient(135deg, #0a0a0a, #1a1a2e);
-            }
-        }
-        
-        /* Покращення для Safari iOS */
-        @supports (-webkit-touch-callout: none) {
-            #title, #smileIndicator {
-                -webkit-backdrop-filter: blur(20px);
-            }
-            
-            #soundBtn, #cameraBtn {
-                -webkit-backdrop-filter: blur(20px);
-            }
+            object-fit: contain;
         }
     </style>
 </head>
 <body>
-    <!-- Відео поток -->
-    <video id="video" playsinline muted></video>
-    
-    <!-- Canvas для емоджі -->
-    <canvas id="canvas"></canvas>
-    
-    <!-- Інтерфейс -->
-    <div id="title">🎂 З Днем Народження, Вадік! 💋</div>
-    <button id="startButton">🎬 ПОЧАТИ!</button>
-    <div id="smileIndicator">
-        <span class="smile-icon">😊</span>
-        <span id="smileText">Посміхнися!</span>
+    <div class="game-info">
+        <h2>🎭 AR Гра 🎭</h2>
+        <p>Натисніть START для запуску випадкового вибору!</p>
     </div>
-    
-    <!-- Дебаг-панель -->
-    <div id="debugPanel" style="display: none;">
-        <div>Смайл рівень: <span id="debugSmile">0</span></div>
-        <div>Посмішка: <span id="debugIsSmiling">ні</span></div>
-        <div>Емоджі: <span id="debugEmojiCount">0</span></div>
-        <div>Відношення: <span id="debugRatio">0</span></div>
-    </div>
-    
-    <!-- Кнопка звуку -->
-    <button id="soundBtn" class="control-btn" title="🎵 Увімкнути звук">🔊</button>
-    
-    <!-- Кнопка камери -->
-    <button id="cameraBtn" class="control-btn" title="Перемкнути камеру">📷</button>
-    
-    <!-- Завантаження -->
-    <div id="loading">
-        <div class="loader"></div>
-        <div id="loadingText" style="font-size: clamp(18px, 4vw, 22px); text-align: center; max-width: min(90vw, 300px);">
-            Завантаження системи розпізнавання облич<br>
-            <span style="font-size: clamp(14px, 3vw, 16px); opacity: 0.8; margin-top: 10px; display: block;">
-                Будь ласка, дозвольте доступ до камери
-            </span>
+   
+    <div class="slot-machine" id="slotMachine">
+        <div class="slot">
+            <img id="slot1" src="" alt="Маска 1">
+        </div>
+        <div class="slot">
+            <img id="slot2" src="" alt="Маска 2">
+        </div>
+        <div class="slot">
+            <img id="slot3" src="" alt="Маска 3">
         </div>
     </div>
-
-    <!-- АУДІО -->
-    <audio id="backgroundMusic" loop playsinline>
-        <source src="fon.mp3" type="audio/mpeg">
-        Ваш браузер не підтримує аудіо.
-    </audio>
-    
-    <!-- Резервне аудіо -->
-    <audio id="backupMusic" loop playsinline>
-        <source src="https://assets.mixkit.co/music/preview/mixkit-clear-sky-479.mp3" type="audio/mpeg">
-    </audio>
-    
-    <audio id="kissSound" preload="auto" playsinline>
-        <source src="https://assets.mixkit.co/sfx/preview/mixkit-kiss-2016.mp3" type="audio/mpeg">
-    </audio>
-
-    <!-- Бібліотеки -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js"></script>
-    
+   
+    <div class="controls">
+        <button class="button" id="startBtn" onclick="startGame()">
+            ▶️ START ГРИ
+        </button>
+        <button class="button stop-btn" id="stopBtn" onclick="stopGame()" disabled>
+            ⏹️ STOP
+        </button>
+        <span class="counter">
+            <span id="currentTime">0.0</span>с
+        </span>
+    </div>
+   
+    <div class="result" id="resultPanel">
+        <h2>🎉 Супер! 🎉</h2>
+        <div class="result-mask" id="resultMask">🎭</div>
+        <p>Вітаю!</p>
+        <button class="close-btn" onclick="closeResult()">Продовжити гру</button>
+    </div>
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" renderer="logarithmicDepthBuffer: true;">
+        <!-- Маркер для трекінгу обличчя -->
+        <a-marker type="face" raycaster="objects: .clickable" emitevents="true"
+                  cursor="fuse: false; rayOrigin: mouse;"
+                  id="face-marker">
+           
+            <!-- Маска (динамічно змінюється) -->
+            <a-entity id="mask-entity"
+                     position="0 0.15 0.05"
+                     scale="0.2 0.2 0.2"
+                     geometry="primitive: plane"
+                     material="src: #mask1; transparent: true; opacity: 1.0"
+                     rotation="0 0 0">
+            </a-entity>
+           
+        </a-marker>
+       
+        <!-- Камера -->
+        <a-entity camera></a-entity>
+       
+        <!-- Текстури для масок -->
+        <a-assets>
+            <img id="mask1" src="masks/mask1.png">
+            <img id="mask2" src="masks/mask2.png">
+            <img id="mask3" src="masks/mask3.png">
+            <img id="mask4" src="masks/mask4.png">
+            <img id="mask5" src="masks/mask5.png">
+        </a-assets>
+       
+        <!-- Додаткова анімація (опційно) -->
+        <a-entity id="effects" position="0 0.3 0">
+            <a-circle id="glowEffect" radius="0.3" color="#4CAF50" opacity="0.3"
+                     position="0 0 -0.1" visible="false"></a-circle>
+        </a-entity>
+    </a-scene>
+   
     <script>
-        (function() {
-            'use strict';
-            
-            // Конфігурація
-            const CONFIG = {
-                SMILE_THRESHOLD: 0.08,
-                KISS_COOLDOWN: 300,
-                EMOJI_SIZE: 75,
-                EMOJI_DURATION: 2000,
-                EMOJI_LIFETIME: 3000,
-                SMOOTHING_FACTOR: 0.7,
-                TARGET_FPS: 30,
-                ONLY_EMOJIS: ['💋', '😘'],
-                DEBUG: false,
-                MAX_EMOJIS_ON_SCREEN: 4,
-                EMOJI_FADE_OUT_TIME: 1000,
-                DETECTION_DELAY: 500
+        // Конфігурація гри
+        const config = {
+            masks: ['mask1', 'mask2', 'mask3', 'mask4', 'mask5'],
+            slotCount: 3, // Кількість слотів
+            spinSpeed: 100, // Швидкість прокрутки (мс)
+            spinDuration: 2000, // Базова тривалість спіну (мс)
+            maxSpins: 20 // Максимальна кількість обертів
+        };
+       
+        // Змінні гри
+        let gameState = {
+            isSpinning: false,
+            currentMask: 'mask1',
+            spinInterval: null,
+            spinStartTime: 0,
+            spins: 0,
+            finalMask: null
+        };
+       
+        // Оновлення таймера
+        function updateTimer() {
+            if (gameState.isSpinning) {
+                const elapsed = (Date.now() - gameState.spinStartTime) / 1000;
+                document.getElementById('currentTime').textContent = elapsed.toFixed(1);
+                requestAnimationFrame(updateTimer);
+            }
+        }
+       
+        // Запуск гри
+        function startGame() {
+            if (gameState.isSpinning) return;
+           
+            gameState.isSpinning = true;
+            gameState.spinStartTime = Date.now();
+            gameState.spins = 0;
+            gameState.finalMask = null;
+           
+            // Активуємо кнопки
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+           
+            // Запускаємо таймер
+            updateTimer();
+           
+            // Запускаємо анімацію слотів
+            startSlotAnimation();
+           
+            // Запускаємо зміну масок
+            gameState.spinInterval = setInterval(changeMask, config.spinSpeed);
+           
+            // Анімація ефектів
+            document.getElementById('glowEffect').setAttribute('visible', 'true');
+           
+            console.log('Гра розпочата!');
+        }
+       
+        // Зупинка гри
+        function stopGame() {
+            if (!gameState.isSpinning) return;
+           
+            gameState.isSpinning = false;
+            clearInterval(gameState.spinInterval);
+           
+            // Випадково обираємо фінальну маску
+            const randomMask = config.masks[Math.floor(Math.random() * config.masks.length)];
+            gameState.finalMask = randomMask;
+           
+            // Встановлюємо фінальну маску
+            setMask(randomMask);
+           
+            // Зупиняємо слоти
+            stopSlotAnimation(randomMask);
+           
+            // Деактивуємо кнопки
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+           
+            // Показуємо результат
+            showResult(randomMask);
+           
+            // Вимикаємо ефекти
+            document.getElementById('glowEffect').setAttribute('visible', 'false');
+           
+            console.log('Гра зупинена. Вибрана маска:', randomMask);
+        }
+       
+        // Зміна маски
+        function changeMask() {
+            if (!gameState.isSpinning) return;
+           
+            // Випадково обираємо маску
+            const randomMask = config.masks[Math.floor(Math.random() * config.masks.length)];
+            gameState.currentMask = randomMask;
+           
+            // Встановлюємо маску
+            setMask(randomMask);
+           
+            // Оновлюємо слоти
+            updateSlots(randomMask);
+           
+            gameState.spins++;
+           
+            // Автоматична зупинка після максимальної кількості спінів
+            if (gameState.spins >= config.maxSpins) {
+                stopGame();
+            }
+        }
+       
+        // Встановлення маски на обличчя
+        function setMask(maskId) {
+            const maskEntity = document.getElementById('mask-entity');
+            maskEntity.setAttribute('material', 'src', '#' + maskId);
+        }
+       
+        // Показ результату
+        function showResult(maskId) {
+            const resultPanel = document.getElementById('resultPanel');
+            const resultMask = document.getElementById('resultMask');
+           
+            // Текст результату
+            const maskNames = {
+                'mask1': '🔥 ВОГНЯНА МАСКА 🔥',
+                'mask2': '❄️ КРИЖАНА МАСКА ❄️',
+                'mask3': '🌿 ЛІСОВА МАСКА 🌿',
+                'mask4': '⭐ ЗІРКОВА МАСКА ⭐',
+                'mask5': '🌙 МІСЯЧНА МАСКА 🌙'
             };
-            
-            // Ключові точки обличчя
-            const FACE_LANDMARKS = {
-                LEFT_MOUTH: 61,
-                RIGHT_MOUTH: 291,
-                UPPER_LIP: 13,
-                LOWER_LIP: 14,
-                LEFT_CHEEK: 123,
-                RIGHT_CHEEK: 352
-            };
-            
-            // Елементи DOM
-            const elements = {
-                video: document.getElementById('video'),
-                canvas: document.getElementById('canvas'),
-                startButton: document.getElementById('startButton'),
-                title: document.getElementById('title'),
-                smileIndicator: document.getElementById('smileIndicator'),
-                loading: document.getElementById('loading'),
-                loadingText: document.getElementById('loadingText'),
-                soundBtn: document.getElementById('soundBtn'),
-                cameraBtn: document.getElementById('cameraBtn'),
-                backgroundMusic: document.getElementById('backgroundMusic'),
-                backupMusic: document.getElementById('backupMusic'),
-                kissSound: document.getElementById('kissSound'),
-                debugPanel: document.getElementById('debugPanel'),
-                debugSmile: document.getElementById('debugSmile'),
-                debugIsSmiling: document.getElementById('debugIsSmiling'),
-                debugEmojiCount: document.getElementById('debugEmojiCount'),
-                debugRatio: document.getElementById('debugRatio')
-            };
-            
-            // Canvas контекст
-            const ctx = elements.canvas.getContext('2d');
-            
-            // Глобальний стан
-            const state = {
-                isRunning: false,
-                isFrontCamera: true,
-                isSoundOn: false,
-                faceMesh: null,
-                videoStream: null,
-                animationFrameId: null,
-                lastSmileTime: 0,
-                lastRenderTime: 0,
-                smileLevel: 0,
-                lastSmileLevel: 0,
-                activeEmojis: [],
-                floatingEmojis: [],
-                confetti: [],
-                stats: { totalKisses: 0, maxSmileLevel: 0 },
-                lastResults: null,
-                audioContext: null,
-                isAudioUnlocked: false,
-                isSmiling: false,
-                smileStartTime: 0,
-                showDebug: CONFIG.DEBUG,
-                deviceType: getDeviceType(),
-                isLandscape: window.innerWidth > window.innerHeight
-            };
-            
-            // Визначення типу пристрою
-            function getDeviceType() {
-                const ua = navigator.userAgent;
-                if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
-                if (/Android/i.test(ua)) return 'android';
-                return 'desktop';
-            }
-            
-            // Перевірка підтримки
-            function checkCompatibility() {
-                const issues = [];
-                
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    issues.push('Браузер не підтримує камеру');
-                }
-                
-                if (!window.FaceMesh) {
-                    issues.push('Бібліотека розпізнавання облич не завантажилась');
-                }
-                
-                return issues;
-            }
-            
-            // ========== АУДІО СИСТЕМА ==========
-            function unlockAudio() {
-                if (state.isAudioUnlocked) return;
-                
-                try {
-                    state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    
-                    if (state.audioContext.state === 'suspended') {
-                        state.audioContext.resume();
+           
+            resultMask.textContent = maskNames[maskId] || '🎭 ТАЄМНИЧА МАСКА 🎭';
+            resultPanel.style.display = 'block';
+           
+            // Анімація
+            resultPanel.style.animation = 'none';
+            setTimeout(() => {
+                resultPanel.style.animation = 'popIn 0.5s';
+            }, 10);
+        }
+       
+        // Закриття результату
+        function closeResult() {
+            document.getElementById('resultPanel').style.display = 'none';
+        }
+       
+        // Анімація слотів
+        function startSlotAnimation() {
+            const slots = ['slot1', 'slot2', 'slot3'];
+           
+            slots.forEach((slotId, index) => {
+                const slot = document.getElementById(slotId);
+                let counter = 0;
+               
+                const slotInterval = setInterval(() => {
+                    const randomMask = config.masks[Math.floor(Math.random() * config.masks.length)];
+                    const maskImg = document.getElementById(randomMask);
+                    if (maskImg) {
+                        slot.src = maskImg.src;
                     }
-                    
-                    if (state.isSoundOn) {
-                        playBackgroundMusic();
-                    }
-                    
-                    state.isAudioUnlocked = true;
-                    console.log('🔊 Аудіо розблоковано!');
-                    
-                } catch (error) {
-                    console.error('Помилка аудіо контексту:', error);
-                    state.isAudioUnlocked = true;
-                }
-            }
-            
-            function playBackgroundMusic() {
-                if (!state.isSoundOn) return;
-                
-                // Для iOS потрібен особливий підхід
-                if (state.deviceType === 'ios') {
-                    elements.backgroundMusic.volume = 0.5;
-                }
-                
-                elements.backgroundMusic.play().then(() => {
-                    console.log('🎵 Музика грає');
-                }).catch(error => {
-                    console.log('⚠️ Не вдалося відтворити основну музику:', error.message);
-                    elements.backupMusic.play().then(() => {
-                        console.log('🎵 Резервна музика грає');
-                        elements.soundBtn.innerHTML = '🎵';
-                    }).catch(backupError => {
-                        console.log('❌ Резервна музика теж не працює:', backupError.message);
-                        elements.soundBtn.innerHTML = '🔇';
-                        state.isSoundOn = false;
-                    });
-                });
-            }
-            
-            function toggleSound() {
-                state.isSoundOn = !state.isSoundOn;
-                
-                if (!state.isAudioUnlocked) {
-                    unlockAudio();
-                }
-                
-                if (state.isSoundOn) {
-                    elements.soundBtn.innerHTML = '🔊';
-                    elements.soundBtn.classList.remove('muted');
-                    elements.soundBtn.title = '🔊 Звук увімкнено';
-                    playBackgroundMusic();
-                    showMessage('🎵 Звук увімкнено!');
-                } else {
-                    elements.soundBtn.innerHTML = '🔇';
-                    elements.soundBtn.classList.add('muted');
-                    elements.soundBtn.title = '🔇 Звук вимкнено';
-                    elements.backgroundMusic.pause();
-                    elements.backupMusic.pause();
-                    showMessage('🔇 Звук вимкнено');
-                }
-            }
-            
-            function showMessage(text, duration = 3000) {
-                const existingMessages = document.querySelectorAll('.message');
-                existingMessages.forEach(msg => msg.remove());
-                
-                const message = document.createElement('div');
-                message.className = 'message';
-                message.textContent = text;
-                message.style.animation = 'fade-in-out 3s forwards';
-                
-                document.body.appendChild(message);
-                
-                setTimeout(() => {
-                    if (message.parentNode) {
-                        message.parentNode.removeChild(message);
-                    }
-                }, duration);
-            }
-            
-            function updateDebugInfo() {
-                if (!state.showDebug) return;
-                
-                elements.debugSmile.textContent = state.smileLevel.toFixed(3);
-                elements.debugIsSmiling.textContent = state.isSmiling ? 'ТАК' : 'ні';
-                elements.debugEmojiCount.textContent = state.activeEmojis.length;
-                elements.debugPanel.style.display = 'block';
-            }
-            
-            // ========== ОСНОВНИЙ КЛАС ==========
-            class KissARApp {
-                constructor() {
-                    this.init();
-                }
-                
-                async init() {
-                    try {
-                        // Перевірка сумісності
-                        const issues = checkCompatibility();
-                        if (issues.length > 0) {
-                            this.showCompatibilityError(issues);
-                            return;
-                        }
-                        
-                        this.setupEventListeners();
-                        await this.setupCamera();
-                        await this.initFaceMesh();
-                        this.setupCanvas();
-                        this.setupOrientation();
-                        this.hideLoading();
-                        this.startRenderLoop();
-                        
-                    } catch (error) {
-                        this.handleError(error);
-                    }
-                }
-                
-                // ========== КАМЕРА ==========
-                async setupCamera() {
-                    try {
-                        // Для мобільних пристроїв використовуємо оптимальну роздільну здатність
-                        let constraints;
-                        
-                        if (state.deviceType === 'ios' || state.deviceType === 'android') {
-                            constraints = {
-                                video: {
-                                    facingMode: 'user',
-                                    width: { ideal: 720 },
-                                    height: { ideal: 1280 },
-                                    frameRate: { ideal: 30 }
-                                }
-                            };
-                        } else {
-                            constraints = {
-                                video: {
-                                    facingMode: 'user',
-                                    width: { ideal: 1280 },
-                                    height: { ideal: 720 },
-                                    frameRate: { ideal: 30 }
-                                }
-                            };
-                        }
-                        
-                        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                        elements.video.srcObject = stream;
-                        state.videoStream = stream;
-                        
-                        await new Promise((resolve, reject) => {
-                            elements.video.onloadedmetadata = () => {
-                                elements.video.play().then(resolve).catch(reject);
-                            };
-                            elements.video.onerror = reject;
-                        });
-                        
-                    } catch (error) {
-                        console.error('Помилка камери:', error);
-                        throw new Error('CAMERA_ERROR');
-                    }
-                }
-                
-                async switchCamera() {
-                    if (!state.videoStream) return;
-                    
-                    state.videoStream.getTracks().forEach(track => track.stop());
-                    state.isFrontCamera = !state.isFrontCamera;
-                    
-                    try {
-                        const constraints = {
-                            video: {
-                                facingMode: state.isFrontCamera ? 'user' : 'environment',
-                                width: { ideal: 720 },
-                                height: { ideal: 1280 },
-                                frameRate: { ideal: 30 }
-                            }
-                        };
-                        
-                        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                        elements.video.srcObject = stream;
-                        state.videoStream = stream;
-                        
-                        elements.video.style.transform = state.isFrontCamera ? 'scaleX(-1)' : 'scaleX(1)';
-                        
-                    } catch (error) {
-                        console.error('Помилка перемикання камери:', error);
-                        state.isFrontCamera = !state.isFrontCamera;
-                        showMessage('Не вдалося перемкнути камеру');
-                    }
-                }
-                
-                // ========== FACE MESH ==========
-                async initFaceMesh() {
-                    try {
-                        state.faceMesh = new FaceMesh({
-                            locateFile: (file) => {
-                                return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-                            }
-                        });
-                        
-                        state.faceMesh.setOptions({
-                            maxNumFaces: 1,
-                            refineLandmarks: true,
-                            minDetectionConfidence: 0.5,
-                            minTrackingConfidence: 0.5
-                        });
-                        
-                        state.faceMesh.onResults((results) => {
-                            state.lastResults = results;
-                        });
-                        
-                        const camera = new Camera(elements.video, {
-                            onFrame: async () => {
-                                if (state.faceMesh && state.isRunning) {
-                                    await state.faceMesh.send({image: elements.video});
-                                }
-                            },
-                            width: 720,
-                            height: 1280
-                        });
-                        
-                        await camera.start();
-                        
-                    } catch (error) {
-                        console.error('Помилка Face Mesh:', error);
-                        throw error;
-                    }
-                }
-                
-                detectFace() {
-                    if (!state.lastResults || !state.isRunning) return;
-                    
-                    const results = state.lastResults;
-                    
-                    if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-                        const landmarks = results.multiFaceLandmarks[0];
-                        this.analyzeSmile(landmarks);
-                    } else {
-                        this.hideSmileIndicator();
-                        state.isSmiling = false;
-                    }
-                    
-                    updateDebugInfo();
-                }
-                
-                analyzeSmile(landmarks) {
-                    if (!landmarks || landmarks.length < 400) return;
-                    
-                    const leftMouth = landmarks[FACE_LANDMARKS.LEFT_MOUTH];
-                    const rightMouth = landmarks[FACE_LANDMARKS.RIGHT_MOUTH];
-                    const upperLip = landmarks[FACE_LANDMARKS.UPPER_LIP];
-                    const lowerLip = landmarks[FACE_LANDMARKS.LOWER_LIP];
-                    
-                    if (!leftMouth || !rightMouth || !upperLip || !lowerLip) return;
-                    
-                    const mouthWidth = Math.abs(rightMouth.x - leftMouth.x);
-                    const mouthHeight = Math.abs(lowerLip.y - upperLip.y);
-                    
-                    const ratio = mouthHeight / mouthWidth;
-                    
-                    if (state.showDebug) {
-                        elements.debugRatio.textContent = ratio.toFixed(3);
-                    }
-                    
-                    let smileScore = Math.max(0, (0.4 - ratio) * 5);
-                    
-                    state.smileLevel = state.lastSmileLevel * (1 - CONFIG.SMOOTHING_FACTOR) + 
-                                      smileScore * CONFIG.SMOOTHING_FACTOR;
-                    state.lastSmileLevel = state.smileLevel;
-                    
-                    const smilePercent = Math.round(state.smileLevel * 100);
-                    const now = Date.now();
-                    
-                    const wasSmiling = state.isSmiling;
-                    
-                    const ratioThreshold = 0.25;
-                    state.isSmiling = ratio < ratioThreshold;
-                    
-                    if (state.isSmiling) {
-                        if (!wasSmiling) {
-                            state.smileStartTime = now;
-                        }
-                        
-                        this.showSmileIndicator(smilePercent);
-                        
-                        if (now - state.lastSmileTime > CONFIG.KISS_COOLDOWN && 
-                            now - state.smileStartTime > CONFIG.DETECTION_DELAY) {
-                            this.addEmojis(landmarks);
-                            state.lastSmileTime = now;
-                        }
-                    } else {
-                        this.hideSmileIndicator();
-                        this.stopAddingNewEmojis();
-                    }
-                }
-                
-                stopAddingNewEmojis() {
-                    // Не додаємо нові емоджі при відсутності посмішки
-                }
-                
-                // ========== ЕМОДЖІ ==========
-                addEmojis(landmarks) {
-                    if (landmarks.length < 400) return;
-                    
-                    // Обмеження кількості емоджі на екрані
-                    if (state.activeEmojis.length >= CONFIG.MAX_EMOJIS_ON_SCREEN) {
-                        state.activeEmojis.shift();
-                    }
-                    
-                    const leftCheek = landmarks[FACE_LANDMARKS.LEFT_CHEEK];
-                    const rightCheek = landmarks[FACE_LANDMARKS.RIGHT_CHEEK];
-                    
-                    if (!leftCheek || !rightCheek) return;
-                    
-                    const emoji = CONFIG.ONLY_EMOJIS[Math.floor(Math.random() * CONFIG.ONLY_EMOJIS.length)];
-                    
-                    const videoWidth = elements.video.videoWidth;
-                    const videoHeight = elements.video.videoHeight;
-                    const canvasWidth = elements.canvas.width;
-                    const canvasHeight = elements.canvas.height;
-                    
-                    // Адаптивні координати
-                    const leftX = (state.isFrontCamera ? (1 - leftCheek.x) : leftCheek.x) * videoWidth;
-                    const leftY = leftCheek.y * videoHeight;
-                    const rightX = (state.isFrontCamera ? (1 - rightCheek.x) : rightCheek.x) * videoWidth;
-                    const rightY = rightCheek.y * videoHeight;
-                    
-                    const scaleX = canvasWidth / videoWidth;
-                    const scaleY = canvasHeight / videoHeight;
-                    
-                    // Адаптивний розмір емоджі
-                    const emojiSize = Math.min(
-                        CONFIG.EMOJI_SIZE * (canvasWidth / 720),
-                        CONFIG.EMOJI_SIZE * (canvasHeight / 1280)
-                    );
-                    
-                    // Додаємо емоджі на щоки
-                    state.activeEmojis.push({
-                        x: leftX * scaleX,
-                        y: leftY * scaleY,
-                        emoji: emoji,
-                        size: emojiSize * (0.9 + Math.random() * 0.2),
-                        rotation: Math.random() * 0.2 - 0.1,
-                        opacity: 1,
-                        life: 1.0,
-                        decay: 0.01,
-                        createdAt: Date.now(),
-                        maxLifetime: CONFIG.EMOJI_LIFETIME,
-                        isFadingOut: false
-                    });
-                    
-                    state.activeEmojis.push({
-                        x: rightX * scaleX,
-                        y: rightY * scaleY,
-                        emoji: emoji,
-                        size: emojiSize * (0.9 + Math.random() * 0.2),
-                        rotation: Math.random() * 0.2 - 0.1,
-                        opacity: 1,
-                        life: 1.0,
-                        decay: 0.01,
-                        createdAt: Date.now(),
-                        maxLifetime: CONFIG.EMOJI_LIFETIME,
-                        isFadingOut: false
-                    });
-                    
-                    // Плаваючі емоджі
-                    this.createFloatingEmoji(leftX * scaleX, leftY * scaleY, emoji);
-                    this.createFloatingEmoji(rightX * scaleX, rightY * scaleY, emoji);
-                    
-                    state.stats.totalKisses += 2;
-                    this.playKissSound();
-                    this.createConfetti(leftX * scaleX, leftY * scaleY);
-                    this.createConfetti(rightX * scaleX, rightY * scaleY);
-                }
-                
-                createFloatingEmoji(x, y, emoji) {
-                    const floatingEmoji = document.createElement('div');
-                    floatingEmoji.className = 'emoji-float';
-                    floatingEmoji.textContent = emoji;
-                    floatingEmoji.style.left = `${x}px`;
-                    floatingEmoji.style.top = `${y}px`;
-                    floatingEmoji.style.color = emoji === '💋' ? '#ff4757' : '#ff6b6b';
-                    
-                    document.body.appendChild(floatingEmoji);
-                    
-                    setTimeout(() => {
-                        if (floatingEmoji.parentNode) {
-                            floatingEmoji.parentNode.removeChild(floatingEmoji);
-                        }
-                    }, CONFIG.EMOJI_DURATION);
-                }
-                
-                updateEmojis() {
-                    const now = Date.now();
-                    
-                    // Очищення canvas
-                    ctx.clearRect(0, 0, elements.canvas.width, elements.canvas.height);
-                    
-                    // Оновлення емоджі
-                    for (let i = state.activeEmojis.length - 1; i >= 0; i--) {
-                        const emoji = state.activeEmojis[i];
-                        
-                        const age = now - emoji.createdAt;
-                        
-                        // Автоматичне зникнення через 3 секунди
-                        if (age > emoji.maxLifetime && !emoji.isFadingOut) {
-                            emoji.isFadingOut = true;
-                            emoji.fadeOutStart = now;
-                            emoji.decay = 0.002;
-                        }
-                        
-                        // Прискорене зникнення після початку fade out
-                        if (emoji.isFadingOut && now - emoji.fadeOutStart > CONFIG.EMOJI_FADE_OUT_TIME) {
-                            emoji.decay = 0.1;
-                        }
-                        
-                        // Оновлення життя
-                        emoji.life -= emoji.decay;
-                        emoji.opacity = Math.max(0, emoji.life);
-                        
-                        // Видалення повністю зниклих емоджі
-                        if (emoji.opacity <= 0.1) {
-                            state.activeEmojis.splice(i, 1);
-                            continue;
-                        }
-                        
-                        this.drawEmoji(emoji);
-                    }
-                    
-                    // Оновлення конфеті
-                    this.updateConfetti();
-                }
-                
-                drawEmoji(emoji) {
-                    ctx.save();
-                    ctx.translate(emoji.x, emoji.y);
-                    ctx.rotate(emoji.rotation);
-                    ctx.globalAlpha = emoji.opacity;
-                    
-                    // Тінь
-                    ctx.shadowColor = emoji.emoji === '💋' ? 'rgba(255, 71, 87, 0.9)' : 'rgba(255, 107, 107, 0.9)';
-                    ctx.shadowBlur = 25 * emoji.opacity;
-                    ctx.shadowOffsetX = 0;
-                    ctx.shadowOffsetY = 0;
-                    
-                    // Малювання емоджі
-                    ctx.font = `bold ${emoji.size}px Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillStyle = emoji.emoji === '💋' ? '#ff4757' : '#ff6b6b';
-                    ctx.fillText(emoji.emoji, 0, 0);
-                    
-                    ctx.restore();
-                }
-                
-                // ========== КОНФЕТІ ==========
-                createConfetti(x, y) {
-                    const particleCount = state.isLandscape ? 6 : 8;
-                    
-                    for (let i = 0; i < particleCount; i++) {
-                        state.confetti.push({
-                            x: x, y: y,
-                            vx: (Math.random() - 0.5) * 6,
-                            vy: Math.random() * -12 - 3,
-                            size: Math.random() * 5 + 2,
-                            color: Math.random() > 0.5 ? '#ff4757' : '#ff6b6b',
-                            life: 1.0, gravity: 0.2,
-                            rotation: Math.random() * Math.PI * 2,
-                            spin: (Math.random() - 0.5) * 0.15
-                        });
-                    }
-                }
-                
-                updateConfetti() {
-                    for (let i = state.confetti.length - 1; i >= 0; i--) {
-                        const particle = state.confetti[i];
-                        
-                        particle.vy += particle.gravity;
-                        particle.x += particle.vx;
-                        particle.y += particle.vy;
-                        particle.life -= 0.015;
-                        particle.rotation += particle.spin;
-                        
-                        if (particle.life <= 0) {
-                            state.confetti.splice(i, 1);
-                            continue;
-                        }
-                        
-                        ctx.save();
-                        ctx.globalAlpha = particle.life;
-                        ctx.translate(particle.x, particle.y);
-                        ctx.rotate(particle.rotation);
-                        ctx.fillStyle = particle.color;
-                        ctx.fillRect(-particle.size/2, -particle.size/2, particle.size, particle.size);
-                        ctx.restore();
-                    }
-                }
-                
-                playKissSound() {
-                    if (!state.isSoundOn) return;
-                    
-                    try {
-                        elements.kissSound.currentTime = 0;
-                        elements.kissSound.volume = 0.7;
-                        elements.kissSound.play().catch(e => console.log('Звук поцілунку:', e));
-                    } catch (error) {
-                        console.error('Помилка звуку:', error);
-                    }
-                }
-                
-                // ========== ІНТЕРФЕЙС ==========
-                showSmileIndicator(percent) {
-                    let smileText;
-                    if (percent > 70) smileText = 'ВАУ! 💋💋';
-                    else if (percent > 50) smileText = 'Прекрасно! 😘';
-                    else if (percent > 30) smileText = 'Вітаємо.Бохонки! 😊';
-                    else smileText = 'Здійснення бажань!';
-                    
-                    document.getElementById('smileText').textContent = smileText;
-                    elements.smileIndicator.style.display = 'flex';
-                }
-                
-                hideSmileIndicator() {
-                    elements.smileIndicator.style.display = 'none';
-                }
-                
-                hideLoading() {
-                    elements.loading.style.display = 'none';
-                    elements.startButton.style.display = 'none';
-                    elements.title.style.display = 'block';
-                    state.isRunning = true;
-                    
-                    // Автоматичне увімкнення музики через 2 секунди
-                    setTimeout(() => {
-                        if (!state.isSoundOn) {
-                            showMessage('🎵 Натисніть кнопку 🔊 щоб увімкнути музику!', 5000);
-                        }
-                    }, 2000);
-                }
-                
-                // ========== CANVAS ТА ОРІЄНТАЦІЯ ==========
-                setupCanvas() {
-                    this.resizeCanvas();
-                    
-                    window.addEventListener('resize', () => {
-                        this.resizeCanvas();
-                        state.isLandscape = window.innerWidth > window.innerHeight;
-                    });
-                    
-                    window.addEventListener('orientationchange', () => {
-                        setTimeout(() => {
-                            this.resizeCanvas();
-                            state.isLandscape = window.innerWidth > window.innerHeight;
-                        }, 300);
-                    });
-                }
-                
-                resizeCanvas() {
-                    const width = window.innerWidth;
-                    const height = window.innerHeight;
-                    
-                    elements.canvas.width = width * window.devicePixelRatio || 1;
-                    elements.canvas.height = height * window.devicePixelRatio || 1;
-                    
-                    // Масштабування для retina дисплеїв
-                    if (window.devicePixelRatio > 1) {
-                        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-                    }
-                    
-                    // Оновлення стилів
-                    elements.canvas.style.width = width + 'px';
-                    elements.canvas.style.height = height + 'px';
-                }
-                
-                setupOrientation() {
-                    // Запобігання автоматичному масштабуванню на iOS
-                    document.addEventListener('touchstart', function(e) {
-                        if (e.touches.length > 1) {
-                            e.preventDefault();
-                        }
-                    }, { passive: false });
-                    
-                    // Запобігання зуму на iOS
-                    document.addEventListener('gesturestart', function(e) {
-                        e.preventDefault();
-                    });
-                }
-                
-                // ========== ГЛАВНИЙ ЦИКЛ ==========
-                startRenderLoop() {
-                    const render = (currentTime) => {
-                        if (currentTime - state.lastRenderTime >= 1000 / CONFIG.TARGET_FPS) {
-                            if (state.isRunning) {
-                                this.detectFace();
-                                this.updateEmojis();
-                            }
-                            state.lastRenderTime = currentTime;
-                        }
-                        state.animationFrameId = requestAnimationFrame(render);
-                    };
-                    render(performance.now());
-                }
-                
-                // ========== ОБРОБНИКИ ПОДІЙ ==========
-                setupEventListeners() {
-                    elements.startButton.addEventListener('click', () => this.hideLoading());
-                    elements.startButton.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        this.hideLoading();
-                    });
-                    
-                    elements.soundBtn.addEventListener('click', () => toggleSound());
-                    elements.soundBtn.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        toggleSound();
-                    });
-                    
-                    elements.cameraBtn.addEventListener('click', () => this.switchCamera());
-                    elements.cameraBtn.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        this.switchCamera();
-                    });
-                    
-                    // Дебаг режим
-                    document.addEventListener('keypress', (e) => {
-                        if (e.key === 'd' || e.key === 'D') {
-                            state.showDebug = !state.showDebug;
-                            elements.debugPanel.style.display = state.showDebug ? 'block' : 'none';
-                        }
-                    });
-                    
-                    // Автоматичне увімкнення аудіо при першій взаємодії
-                    document.addEventListener('click', unlockAudio, { once: true });
-                    document.addEventListener('touchstart', unlockAudio, { once: true });
-                    
-                    // Запобігання контекстному меню на мобільних
-                    document.addEventListener('contextmenu', (e) => {
-                        e.preventDefault();
-                    });
-                }
-                
-                // ========== ПОМИЛКИ ==========
-                showCompatibilityError(issues) {
-                    elements.loading.innerHTML = `
-                        <div style="color: #ff4757; font-size: clamp(20px, 5vw, 24px); margin-bottom: 15px; text-align: center;">
-                            Проблема з сумісністю
-                        </div>
-                        <div style="color: white; font-size: clamp(14px, 3vw, 16px); margin-bottom: 20px; line-height: 1.4; text-align: center; max-width: min(90vw, 300px);">
-                            ${issues.join('<br>')}
-                        </div>
-                        <button onclick="location.reload()" style="
-                            padding: 12px 24px;
-                            background: linear-gradient(135deg, #ff6b6b, #ff4757);
-                            border: none;
-                            color: white;
-                            font-size: clamp(14px, 3vw, 16px);
-                            font-weight: bold;
-                            cursor: pointer;
-                            border-radius: 25px;
-                            transition: all 0.3s ease;
-                        ">Спробувати знову</button>
-                    `;
-                }
-                
-                handleError(error) {
-                    console.error('Помилка додатку:', error);
-                    
-                    let message = 'Невідома помилка';
-                    let details = '';
-                    
-                    if (error.message === 'CAMERA_ERROR') {
-                        message = 'Помилка доступу до камери';
-                        details = 'Дозвольте доступ до камери у налаштуваннях браузера';
-                    } else if (error.message.includes('Face Mesh')) {
-                        message = 'Помилка розпізнавання облич';
-                        details = 'Перевірте підключення до інтернету';
-                    }
-                    
-                    elements.loading.innerHTML = `
-                        <div style="color: #ff4757; font-size: clamp(20px, 5vw, 24px); margin-bottom: 15px; text-align: center;">${message}</div>
-                        <div style="color: white; font-size: clamp(14px, 3vw, 16px); margin-bottom: 20px; line-height: 1.4; text-align: center; max-width: min(90vw, 300px);">${details}</div>
-                        <button onclick="location.reload()" style="
-                            padding: 12px 24px;
-                            background: linear-gradient(135deg, #ff6b6b, #ff4757);
-                            border: none;
-                            color: white;
-                            font-size: clamp(14px, 3vw, 16px);
-                            font-weight: bold;
-                            cursor: pointer;
-                            border-radius: 25px;
-                            transition: all 0.3s ease;
-                        ">Спробувати знову</button>
-                    `;
-                }
-                
-                cleanup() {
-                    if (state.animationFrameId) cancelAnimationFrame(state.animationFrameId);
-                    if (state.videoStream) state.videoStream.getTracks().forEach(track => track.stop());
-                }
-            }
-            
-            // Запуск додатку
-            window.addEventListener('DOMContentLoaded', () => {
-                // Запобігання bounce на iOS
-                document.body.addEventListener('touchmove', function(e) {
-                    if (e.scale !== 1) { e.preventDefault(); }
-                }, { passive: false });
-                
-                new KissARApp();
+                    counter++;
+                   
+                    // Зберігаємо інтервал для зупинки
+                    slot.dataset.intervalId = slotInterval;
+                }, 100 + (index * 50)); // Різна швидкість для кожного слота
             });
-            
-        })();
+        }
+       
+        // Зупинка анімації слотів
+        function stopSlotAnimation(finalMask) {
+            const slots = ['slot1', 'slot2', 'slot3'];
+           
+            // Отримуємо зображення фінальної маски
+            const finalMaskImg = document.getElementById(finalMask);
+           
+            // Зупиняємо кожен слот з затримкою для ефекту
+            slots.forEach((slotId, index) => {
+                setTimeout(() => {
+                    const slot = document.getElementById(slotId);
+                   
+                    // Зупиняємо інтервал
+                    if (slot.dataset.intervalId) {
+                        clearInterval(parseInt(slot.dataset.intervalId));
+                    }
+                   
+                    // Встановлюємо фінальне зображення
+                    if (finalMaskImg) {
+                        slot.src = finalMaskImg.src;
+                    }
+                }, index * 300); // Затримка між зупинкою слотів
+            });
+        }
+       
+        // Оновлення слотів
+        function updateSlots(maskId) {
+            const maskImg = document.getElementById(maskId);
+            if (!maskImg) return;
+           
+            // Оновлюємо перший слот (інші оновлюються в анімації)
+            const slot1 = document.getElementById('slot1');
+            slot1.src = maskImg.src;
+        }
+       
+        // Ініціалізація при завантаженні
+        window.addEventListener('DOMContentLoaded', () => {
+            // Встановлюємо початкову маску
+            setMask('mask1');
+           
+            // Завантажуємо зображення в слоти
+            const maskImg = document.getElementById('mask1');
+            const slots = ['slot1', 'slot2', 'slot3'];
+            slots.forEach(slotId => {
+                const slot = document.getElementById(slotId);
+                slot.src = maskImg.src;
+            });
+           
+            // Обробка подій клавіатури
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    if (gameState.isSpinning) {
+                        stopGame();
+                    } else {
+                        startGame();
+                    }
+                }
+            });
+           
+            // Інформація про керування
+            console.log('Гра готова! Натисніть START або пробіл для початку.');
+        });
+       
+        // Стилі для анімацій
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes popIn {
+                0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+                70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+                100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            }
+           
+            @keyframes pulse {
+                0% { opacity: 0.3; }
+                50% { opacity: 0.7; }
+                100% { opacity: 0.3; }
+            }
+           
+            #glowEffect {
+                animation: pulse 1s infinite;
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
