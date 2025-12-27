@@ -59,21 +59,25 @@
       pointer-events: none;
     }
     .slot {
-      width: 100px;
-      height: 140px;
+      width: 130px;
+      height: 160px;
       background: white;
       border: 3px solid gold;
-      border-radius: 10px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
       transition: transform 0.1s;
+      padding: 10px;
     }
-    .slot img {
-      width: 90%;
-      height: 90%;
-      object-fit: contain;
+    .slot-text {
+      color: #000;
+      font-size: 14px;
+      font-weight: bold;
+      text-align: center;
+      line-height: 1.3;
+      word-wrap: break-word;
     }
     #result {
       position: fixed;
@@ -88,28 +92,31 @@
       justify-content: center;
       z-index: 10;
       pointer-events: auto;
-    }
-    #result img {
-      width: 90vw;
-      max-width: 300px;
-      height: auto;
-      object-fit: contain;
-      background: white;
       padding: 20px;
+      text-align: center;
+    }
+    #result-text {
+      background: white;
+      color: #000;
+      padding: 30px;
       border-radius: 20px;
       border: 4px solid gold;
+      font-size: 28px;
+      font-weight: bold;
+      line-height: 1.4;
+      max-width: 90vw;
       box-shadow: 0 0 30px rgba(212, 175, 55, 0.7);
+      margin-bottom: 30px;
     }
     #playAgain {
-      margin-top: 30px;
-      padding: 12px 30px;
-      font-size: 20px;
+      margin-top: 20px;
+      padding: 14px 40px;
+      font-size: 22px;
       background: #2196F3;
       color: white;
       border: none;
       border-radius: 30px;
       cursor: pointer;
-      display: none;
     }
   </style>
 </head>
@@ -118,16 +125,16 @@
   <div id="ui">
     <div id="instruction">ПОКАЖИ ЯЗИК!</div>
     <div id="slots">
-      <div class="slot"><img id="s1" src="masks/mask1.png" /></div>
-      <div class="slot"><img id="s2" src="masks/mask1.png" /></div>
-      <div class="slot"><img id="s3" src="masks/mask1.png" /></div>
+      <div class="slot"><div class="slot-text" id="s1">Заспівай Вадіку пісню</div></div>
+      <div class="slot"><div class="slot-text" id="s2">Розкажи найсмішнішу історію про Вадіка</div></div>
+      <div class="slot"><div class="slot-text" id="s3">Назви три найкращі якості іменинника</div></div>
     </div>
   </div>
   <div id="result">
-    <h2 style="color: gold; font-size: 32px; margin-bottom: 20px;">ТВІЙ ВИБІР</h2>
-    <img id="resultImg" src="" />
+    <h2 style="color: gold; font-size: 36px; margin-bottom: 20px;">ТВІЙ ВИБІР</h2>
+    <div id="result-text"></div>
+    <button id="playAgain">ГРАТИ ЩЕ</button>
   </div>
-  <button id="playAgain">ГРАТИ ЩЕ</button>
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
@@ -137,12 +144,31 @@
     const instruction = document.getElementById("instruction");
     const slotsContainer = document.getElementById("slots");
     const resultPanel = document.getElementById("result");
-    const resultImg = document.getElementById("resultImg");
+    const resultText = document.getElementById("result-text");
     const playAgainBtn = document.getElementById("playAgain");
 
-    const masks = ["mask1", "mask2", "mask3", "mask4", "mask5"];
+    // Усі завдання
+    const tasks = [
+      "Заспівай Вадіку пісню",
+      "Розкажи найсмішнішу історію про Вадіка",
+      "Назви три найкращі якості іменинника",
+      "Станцюй «танець» для Вадіка",
+      "Пригадай улюблений напій Вадіка",
+      "Зроби з Вадіком круте селфі",
+      "Скажи Вадіку комплімент на «В»",
+      "Побажай Вадіку мільйон доларів гучно",
+      "Пригадай вашу першу зустріч",
+      "Обійми Вадіка найміцніше за всіх",
+      "Покажи Вадіка через десять років",
+      "Придумай Вадіку супергеройське прізвисько",
+      "Промов тост лише мовою жестів",
+      "Назви улюблену страву іменинника",
+      "Розкажи, чому Вадік — крутий",
+      "Виконай одне бажання іменинника зараз",
+      "Замов привітання через штучний інтелект"
+    ];
+
     let tongueDetected = false;
-    let gameActive = false;
     let spinning = false;
     let spinInterval = null;
 
@@ -183,13 +209,11 @@
       const tongueTip = landmarks[20].y;
 
       const mouthOpen = lipBottom - lipTop > 0.03;
-      const tongueVisible = mouthOpen && tongueTip < lipTop - 0.01; // трохи строгіше
+      const tongueVisible = mouthOpen && tongueTip < lipTop - 0.01;
 
       if (tongueVisible && !tongueDetected) {
-        // Язик з'явився — починаємо гру
         tongueDetected = true;
         if (resultPanel.style.display === "flex") {
-          // Приховуємо результат
           resultPanel.style.display = "none";
           instruction.style.opacity = "1";
         }
@@ -197,7 +221,6 @@
         instruction.style.opacity = "1";
         startSpinning();
       } else if (!tongueVisible && tongueDetected) {
-        // Язик зник — починаємо затримку
         tongueDetected = false;
         startHideSequence();
       }
@@ -206,39 +229,34 @@
     function startSpinning() {
       if (spinning) return;
       spinning = true;
-      gameActive = true;
       slotsContainer.style.display = "flex";
 
       if (spinInterval) clearInterval(spinInterval);
       spinInterval = setInterval(() => {
         const slots = [s1, s2, s3];
         slots.forEach(slot => {
-          const randomMask = masks[Math.floor(Math.random() * masks.length)];
-          slot.src = `masks/${randomMask}.png`;
+          const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
+          slot.textContent = randomTask;
         });
-      }, 80);
+      }, 100);
     }
 
     function startHideSequence() {
-      // Зупиняємо обертання відразу
       if (spinInterval) {
         clearInterval(spinInterval);
         spinInterval = null;
       }
       spinning = false;
 
-      // Через коротку затримку — показуємо результат
       setTimeout(() => {
         const slots = [s1, s2, s3];
         const randomSlot = slots[Math.floor(Math.random() * slots.length)];
-        const finalSrc = randomSlot.src;
+        const finalText = randomSlot.textContent;
 
-        // Приховуємо слоти
         slotsContainer.style.display = "none";
         instruction.style.opacity = "0";
 
-        // Показуємо результат
-        resultImg.src = finalSrc;
+        resultText.textContent = finalText;
         resultPanel.style.display = "flex";
       }, 300);
     }
@@ -247,7 +265,6 @@
       resultPanel.style.display = "none";
       instruction.textContent = "ПОКАЖИ ЯЗИК!";
       instruction.style.opacity = "1";
-      gameActive = false;
       tongueDetected = false;
       if (spinInterval) {
         clearInterval(spinInterval);
